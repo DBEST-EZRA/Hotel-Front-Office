@@ -1,7 +1,49 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Dashboard from "./components/Dashboard";
+import SignIn from "./components/SignIn";
+import AdminDashboard from "./BackOffice/AdminDashboard";
+import SuperAdmin from "./Management/SuperAdmin";
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 function App() {
   return (
     <>
-      <h1>What a Mighty God you are!</h1>
+      <Router>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<SignIn />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+
+          {/* Protected routes */}
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/superadmin"
+            element={
+              <ProtectedRoute>
+                <SuperAdmin />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Router>
     </>
   );
 }
