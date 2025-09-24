@@ -1,5 +1,5 @@
 /* 🎨 Color Variables - Change here once, apply everywhere */
-:root {
+/* :root {
   --color-bg-main: #1a1a1a;
   --color-bg-section: #222;
   --color-bg-card: #333333;
@@ -13,6 +13,24 @@
   --color-danger: #ff6b6b;
 
   --border-color: #333;
+} */
+
+:root {
+  /* Light & Colorful Theme */
+  --color-bg-main: #dde2e7; /* Very light gray background */
+  --color-bg-section: #ffffff; /* White cards/sections */
+  --color-bg-card: #d8dde2; /* Light gray for inner cards */
+  --color-bg-search: #b6bbc2; /* Slightly darker for search bar */
+
+  --color-text-main: #1a202c; /* Dark gray for text */
+  --color-text-muted: #64748b; /* Muted blue-gray for icons/hints */
+
+  --color-primary: #3c51a1; /* Your blue accent (#3c51a1) */
+  --color-hover: #dbeafe; /* Light blue hover for rows */
+  --color-danger: #deffe3; /* Strong red for delete */
+  --color-success: #926504; /* Strong red for delete */
+
+  --border-color: #cbd5e1; /* Soft border color */
 }
 
 /* MAIN CONTAINER */
@@ -48,7 +66,9 @@
 }
 
 .category-card {
-  background: var(--color-bg-card);
+  /* background: var(--color-text-muted); */
+  background: var(--color-success);
+  color: var(--color-bg-section);
   padding: 20px;
   border-radius: 8px;
   cursor: pointer;
@@ -60,7 +80,7 @@
 .category-card.active,
 .category-card:hover {
   background: var(--color-primary);
-  color: var(--color-text-main);
+  color: var(--color-bg-section);
 }
 
 /* MIDDLE SECTION */
@@ -80,7 +100,8 @@
 }
 
 .summary-card {
-  background: var(--color-bg-card);
+  background: var(--color-primary);
+  color: var(--color-bg-section);
   padding: 10px;
   border-radius: 8px;
   text-align: center;
@@ -153,6 +174,9 @@
 .cart-section {
   flex: 1;
   overflow-y: auto;
+  background-color: var(--color-danger);
+  padding: 10px;
+  border-radius: 10px;
 }
 
 .cart-items {
@@ -171,7 +195,7 @@
 }
 
 .delete-icon {
-  color: var(--color-danger);
+  color: var(--color-primary);
   cursor: pointer;
 }
 
