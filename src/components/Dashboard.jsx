@@ -18,10 +18,10 @@ const Dashboard = () => {
     "Specials",
   ];
   const foods = [
-    { id: "F001", name: "Chicken Biryani", rate: 250 },
-    { id: "F002", name: "Grilled Fish", rate: 400 },
-    { id: "F003", name: "Chapati", rate: 20 },
-    { id: "F004", name: "Soda", rate: 70 },
+    { id: "F001", name: "Chicken Biryani", rate: 250, category: "Starters" },
+    { id: "F002", name: "Grilled Fish", rate: 400, category: "Starters" },
+    { id: "F003", name: "Chapati", rate: 20, category: "Starters" },
+    { id: "F004", name: "Soda", rate: 70, category: "Drinks" },
   ];
 
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
@@ -43,6 +43,12 @@ const Dashboard = () => {
   const removeCartItem = (id) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== id));
   };
+
+  const filteredFoods = foods.filter(
+    (f) =>
+      f.category === selectedCategory &&
+      f.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const total = cart.reduce((sum, item) => sum + item.rate * item.qty, 0);
 
@@ -99,28 +105,28 @@ const Dashboard = () => {
 
         {/* Food Table */}
         <div className="food-list">
-          <table>
-            <thead>
-              <tr>
-                <th>Food</th>
-                <th>Rate</th>
-                <th>ID</th>
-              </tr>
-            </thead>
-            <tbody>
-              {foods
-                .filter((f) =>
-                  f.name.toLowerCase().includes(searchTerm.toLowerCase())
-                )
-                .map((food) => (
+          {filteredFoods.length === 0 ? (
+            <p className="no-foods">No foods found in {selectedCategory}</p>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Food</th>
+                  <th>Rate</th>
+                  <th>ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredFoods.map((food) => (
                   <tr key={food.id} onClick={() => handleFoodClick(food)}>
                     <td>{food.name}</td>
                     <td>{food.rate}</td>
                     <td>{food.id}</td>
                   </tr>
                 ))}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
