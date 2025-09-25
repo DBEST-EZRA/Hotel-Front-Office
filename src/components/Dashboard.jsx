@@ -138,9 +138,9 @@ const Dashboard = () => {
               <tbody>
                 {filteredFoods.map((food) => (
                   <tr key={food.id} onClick={() => handleFoodClick(food)}>
-                    <td>{food.name}</td>
-                    <td>{food.rate}</td>
-                    <td>{food.id}</td>
+                    <td style={{ padding: "12px" }}>{food.name}</td>
+                    <td style={{ padding: "12px" }}>{food.rate}</td>
+                    <td style={{ padding: "12px" }}>{food.id}</td>
                   </tr>
                 ))}
               </tbody>
@@ -180,7 +180,9 @@ const Dashboard = () => {
 
         <div className="cart-summary">
           <small>Bill No: #{billNo}</small>
-          <h1>Total: KES {total}</h1>
+          <h2>
+            <b>Total: KES {total}</b>
+          </h2>
           <button
             style={{ height: "50px" }}
             className="btn btn-primary w-100 mb-2"
