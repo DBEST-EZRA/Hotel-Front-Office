@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaSearch,
   FaTimes,
@@ -27,6 +27,21 @@ const Dashboard = () => {
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [billNo, setBillNo] = useState("");
+
+  useEffect(() => {
+    const generateBillNo = () => {
+      const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let result = "";
+      for (let i = 0; i < 6; i++) {
+        result += characters.charAt(
+          Math.floor(Math.random() * characters.length)
+        );
+      }
+      return result;
+    };
+    setBillNo(generateBillNo());
+  }, []);
 
   const handleFoodClick = (food) => {
     setCart((prevCart) => {
@@ -160,8 +175,8 @@ const Dashboard = () => {
         </div>
 
         <div className="cart-summary">
-          <small>Bill No: #{Math.floor(Math.random() * 10000)}</small>
-          <h4>Total: KES {total}</h4>
+          <small>Bill No: #{billNo}</small>
+          <h1>Total: KES {total}</h1>
           <button className="btn btn-success w-100 mb-2">Checkout</button>
           <button className="btn btn-secondary w-100">Hold Bill</button>
         </div>
