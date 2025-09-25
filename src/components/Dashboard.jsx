@@ -59,6 +59,10 @@ const Dashboard = () => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== id));
   };
 
+  const clearCart = () => {
+    setCart([]);
+  };
+
   const filteredFoods = foods.filter(
     (f) =>
       f.category === selectedCategory &&
@@ -177,8 +181,18 @@ const Dashboard = () => {
         <div className="cart-summary">
           <small>Bill No: #{billNo}</small>
           <h1>Total: KES {total}</h1>
-          <button className="btn btn-success w-100 mb-2">Checkout</button>
-          <button className="btn btn-secondary w-100">Hold Bill</button>
+          <button
+            style={{ height: "50px" }}
+            className="btn btn-primary w-100 mb-2"
+          >
+            Checkout
+          </button>
+          <div className="d-flex gap-2">
+            <button className="btn btn-secondary flex-fill">Hold Bill</button>
+            <button className="btn btn-danger flex-fill" onClick={clearCart}>
+              Clear Cart
+            </button>
+          </div>
         </div>
       </div>
     </div>
