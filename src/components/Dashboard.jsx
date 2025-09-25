@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaSearch,
+  FaSignOutAlt,
   FaTimes,
   FaTrashAlt,
   FaShoppingCart,
@@ -28,6 +30,13 @@ const Dashboard = () => {
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [billNo, setBillNo] = useState("");
+  const navigate = useNavigate();
+  const [user, setUser] = useState({ name: "User" });
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
 
   useEffect(() => {
     const generateBillNo = () => {
@@ -70,6 +79,12 @@ const Dashboard = () => {
   );
 
   const total = cart.reduce((sum, item) => sum + item.rate * item.qty, 0);
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+    navigate("/");
+  };
 
   return (
     <div className="dashboard-container">
@@ -151,8 +166,14 @@ const Dashboard = () => {
 
       {/* Right: Cart */}
       <div className="right-section">
-        <div className="user-info">
-          <FaUser /> <span>John Doe (Cashier)</span>
+        <div className="d-flex gap-2 user-info">
+          <FaUser /> <span>{user?.name || "User"}</span>
+          <span
+            onClick={handleLogout}
+            style={{ cursor: "pointer", color: "red" }}
+          >
+            <FaSignOutAlt style={{ marginLeft: "8px", color: "red" }} /> Logout
+          </span>
         </div>
 
         <div className="cart-section">
