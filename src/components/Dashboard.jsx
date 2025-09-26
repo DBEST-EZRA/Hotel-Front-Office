@@ -5,6 +5,8 @@ import {
   FaSignOutAlt,
   FaTimes,
   FaTrashAlt,
+  FaEye,
+  FaEyeSlash,
   FaShoppingCart,
   FaUser,
 } from "react-icons/fa";
@@ -32,9 +34,11 @@ const Dashboard = () => {
   const [billNo, setBillNo] = useState("");
   const navigate = useNavigate();
   const [user, setUser] = useState({ name: "User" });
+  const [visible, setVisible] = useState(false);
+  const toggleVisibility = () => setVisible((prev) => !prev);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = sessionStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
@@ -109,14 +113,24 @@ const Dashboard = () => {
       {/* Middle: Food List + Search + Summary Cards */}
       <div className="middle-section">
         <div className="summary-cards">
+          {/* Daily Sales */}
           <div className="summary-card">
             <h6>Daily Sales</h6>
-            <p>KES 0</p>
+            <div className="flex items-center gap-2">
+              <p className={visible ? "" : "blurred"}>KES 0</p>
+              <span onClick={toggleVisibility} style={{ cursor: "pointer" }}>
+                {visible ? <FaEyeSlash /> : <FaEye />}
+              </span>
+            </div>
           </div>
+
+          {/* Pending Bills */}
           <div className="summary-card">
             <h6>Pending Bills</h6>
             <p>0</p>
           </div>
+
+          {/* Bookings (no blur) */}
           <div className="summary-card">
             <h6>Bookings</h6>
             <p>0</p>
