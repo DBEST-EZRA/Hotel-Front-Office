@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FaCog,
   FaUsers,
@@ -26,12 +26,17 @@ import Supplies from "./Supplies";
 import Compliance from "./Compliance";
 import CoA from "./CoA";
 import Notifications from "./Notifications";
+import GeneralReport from "./GeneralReport";
 
 const AdminDashboard = () => {
   const [selected, setSelected] = useState("Settings");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showReports, setShowReports] = useState(false);
   const [notifications, setNotifications] = useState(3);
+
+  useEffect(() => {
+    setNotifications(3);
+  }, []);
 
   // Map components dynamically
   const Components = {
@@ -41,6 +46,7 @@ const AdminDashboard = () => {
     Reports: () => <Reports />,
     "Daily Sales": () => <DailySales />,
     "Monthly Sales": () => <MonthlySales />,
+    General: () => <GeneralReport />,
     Expenses: () => <Expenses />,
     Supplies: () => <Supplies />,
     Compliance: () => <Compliance />,
@@ -111,7 +117,7 @@ const AdminDashboard = () => {
             </div>
             {showReports && sidebarOpen && (
               <div className="ms-4">
-                {["Daily Sales", "Monthly Sales"].map((sub) => (
+                {["General", "Daily Sales", "Monthly Sales"].map((sub) => (
                   <div
                     key={sub}
                     className={`p-2 rounded sidebar-sub-item ${
