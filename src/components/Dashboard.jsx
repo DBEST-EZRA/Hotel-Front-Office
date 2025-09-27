@@ -85,8 +85,8 @@ const Dashboard = () => {
   const total = cart.reduce((sum, item) => sum + item.rate * item.qty, 0);
 
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("accessToken");
+    sessionStorage.removeItem("user");
     navigate("/");
   };
 

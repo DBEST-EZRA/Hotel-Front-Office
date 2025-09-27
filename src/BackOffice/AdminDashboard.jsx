@@ -27,15 +27,22 @@ import Compliance from "./Compliance";
 import CoA from "./CoA";
 import Notifications from "./Notifications";
 import GeneralReport from "./GeneralReport";
+import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
   const [selected, setSelected] = useState("Settings");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showReports, setShowReports] = useState(false);
   const [notifications, setNotifications] = useState(3);
+  const [user, setUser] = useState({ name: "User" });
 
   useEffect(() => {
     setNotifications(3);
+  }, []);
+
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
   // Map components dynamically
@@ -54,6 +61,8 @@ const AdminDashboard = () => {
     Notifications: () => <Notifications />,
   };
 
+  const navigate = useNavigate();
+
   const SelectedComponent = Components[selected] || (() => <p>No Component</p>);
 
   // Sidebar menu items (except Reports, which has submenu)
@@ -66,6 +75,12 @@ const AdminDashboard = () => {
     { name: "Compliance", icon: <FaBalanceScale /> },
     { name: "CoA", icon: <FaFileInvoiceDollar /> },
   ];
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("accessToken");
+    sessionStorage.removeItem("user");
+    navigate("/");
+  };
 
   return (
     <div className="d-flex vh-100">
@@ -166,14 +181,16 @@ const AdminDashboard = () => {
             {/* User Info */}
             <div className="d-flex align-items-center gap-2">
               <FaUser />
-              <span className="d-none d-sm-inline">Admin</span>
+              <span className="d-none d-sm-inline">
+                {user?.name || "Admin"}
+              </span>
             </div>
 
             {/* Logout */}
             <div
               className="d-flex align-items-center gap-2 text-danger"
               style={{ cursor: "pointer" }}
-              onClick={() => console.log("Logout clicked")}
+              onClick={handleLogout}
             >
               <span className="d-none d-sm-inline">Logout</span>
               <FaSignOutAlt />
