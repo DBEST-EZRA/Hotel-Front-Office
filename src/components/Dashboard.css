@@ -30,7 +30,8 @@
   --color-danger: #deffe3; /* Strong red for delete */
   --color-success: #926504; /* Strong red for delete */
 
-  --border-color: #cbd5e1; /* Soft border color */
+  --border-color: #cbd5e1;
+  --pure-blue: #0d6efd; /* Soft border color */
 }
 
 /* MAIN CONTAINER */
@@ -59,15 +60,21 @@
   font-weight: 600;
 }
 
-.category-list {
+/* .category-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
+} */
+
+.category-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px; /* spacing between cards */
 }
 
 .category-card {
   /* background: var(--color-text-muted); */
-  background: var(--color-success);
+  background: var(--pure-blue);
   color: var(--color-bg-section);
   padding: 20px;
   border-radius: 8px;
@@ -154,6 +161,75 @@
   cursor: pointer;
 }
 
+/* Top small buttons */
+.top-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.btn-action {
+  background: var(--pure-blue);
+  color: var(--color-bg-section);
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.btn-action:hover {
+  background: var(--color-bg-section);
+  color: #1a202c;
+}
+
+/* Bottom big buttons */
+.bottom-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.btn-big {
+  height: 60px; /* higher than top buttons */
+  font-size: 0.9rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  color: white;
+  transition: 0.2s;
+}
+
+.btn-big.green {
+  background: green;
+}
+.btn-big.orange {
+  background: orange;
+}
+.btn-big.grey {
+  background: grey;
+}
+.btn-big.red {
+  background: red;
+}
+.btn-big.blue {
+  background: #0d6efd;
+} /* Bootstrap primary blue */
+.btn-big.purple {
+  background: purple;
+}
+
+.btn-big:hover {
+  opacity: 0.85;
+}
+
 /* RIGHT SECTION */
 .right-section {
   flex: 1;
@@ -224,6 +300,6 @@
   .right-section {
     flex: unset;
     /* added */
-    height: 350px;
+    height: 420px;
   }
 }

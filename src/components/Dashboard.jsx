@@ -1,14 +1,21 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   FaSearch,
   FaSignOutAlt,
   FaTimes,
   FaTrashAlt,
-  FaEye,
-  FaEyeSlash,
   FaShoppingCart,
   FaUser,
+  FaPause,
+  FaRedo,
+  FaTrash,
+  FaPrint,
+  FaSync,
+  FaGift,
+  FaShare,
+  FaCreditCard,
 } from "react-icons/fa";
 import "./Dashboard.css";
 
@@ -20,12 +27,33 @@ const Dashboard = () => {
     "Desserts",
     "Drinks",
     "Specials",
-  ];
-  const foods = [
-    { id: "F001", name: "Chicken Biryani", rate: 250, category: "Starters" },
-    { id: "F002", name: "Grilled Fish", rate: 400, category: "Starters" },
-    { id: "F003", name: "Chapati", rate: 20, category: "Starters" },
-    { id: "F004", name: "Soda", rate: 70, category: "Drinks" },
+    "Soups",
+    "Salads",
+    "Sandwiches",
+    "Pizza",
+    "Pasta",
+    "Burgers",
+    "Seafood",
+    "Grill",
+    "Steaks",
+    "Chicken",
+    "Vegetarian",
+    "Vegan",
+    "Breakfast",
+    "Lunch",
+    "Dinner",
+    "Beer",
+    "Whiskey",
+    "Wines",
+    "Cocktails",
+    "Juices",
+    "Soft Drinks",
+    "Tea",
+    "Coffee",
+    "Smoothies",
+    "Shakes",
+    "Snacks",
+    "Sides",
   ];
 
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
@@ -34,12 +62,42 @@ const Dashboard = () => {
   const [billNo, setBillNo] = useState("");
   const navigate = useNavigate();
   const [user, setUser] = useState({ name: "User" });
-  const [visible, setVisible] = useState(false);
-  const toggleVisibility = () => setVisible((prev) => !prev);
+
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
 
   useEffect(() => {
     const storedUser = sessionStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
+
+  useEffect(() => {
+    const fetchInventory = async () => {
+      setLoadingProducts(true);
+      try {
+        // Get user from session storage
+        const storedUser = sessionStorage.getItem("user");
+        if (!storedUser) throw new Error("User not found in sessionStorage");
+
+        const user = JSON.parse(storedUser);
+        const storeId = user.storeid;
+
+        if (!storeId) throw new Error("Store ID missing");
+
+        // ✅ Use axios with params (safer & cleaner)
+        const { data } = await axios.get("http://localhost:5000/inventory", {
+          params: { storeId },
+        });
+
+        setProducts(data);
+      } catch (error) {
+        console.error("Error fetching inventory:", error.message);
+        setProducts([]); // fallback to empty list
+      }
+      setLoadingProducts(false);
+    };
+
+    fetchInventory();
   }, []);
 
   useEffect(() => {
@@ -76,10 +134,10 @@ const Dashboard = () => {
     setCart([]);
   };
 
-  const filteredFoods = foods.filter(
+  const filteredFoods = products.filter(
     (f) =>
       f.category === selectedCategory &&
-      f.name.toLowerCase().includes(searchTerm.toLowerCase())
+      f.item.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const total = cart.reduce((sum, item) => sum + item.rate * item.qty, 0);
@@ -111,30 +169,14 @@ const Dashboard = () => {
       </div>
 
       {/* Middle: Food List + Search + Summary Cards */}
+      {/* Middle: Food List + Search + Action Buttons */}
       <div className="middle-section">
-        <div className="summary-cards">
-          {/* Daily Sales */}
-          <div className="summary-card">
-            <h6>Daily Sales</h6>
-            <div className="flex items-center gap-2">
-              <p className={visible ? "" : "blurred"}>KES 0</p>
-              <span onClick={toggleVisibility} style={{ cursor: "pointer" }}>
-                {visible ? <FaEyeSlash /> : <FaEye />}
-              </span>
-            </div>
-          </div>
-
-          {/* Pending Bills */}
-          <div className="summary-card">
-            <h6>Pending Bills</h6>
-            <p>0</p>
-          </div>
-
-          {/* Bookings (no blur) */}
-          <div className="summary-card">
-            <h6>Bookings</h6>
-            <p>0</p>
-          </div>
+        {/* Top Buttons */}
+        <div className="top-buttons">
+          <button className="btn-action">DINE IN</button>
+          <button className="btn-action">TAKE AWAY</button>
+          <button className="btn-action">HOME DELIVERY</button>
+          <button className="btn-action">SCAN BARCODE</button>
         </div>
 
         {/* Search Bar */}
@@ -153,7 +195,10 @@ const Dashboard = () => {
 
         {/* Food Table */}
         <div className="food-list">
-          {filteredFoods.length === 0 ? (
+          {loadingProducts && (
+            <div className="p-2 text-center text-muted">Loading inventory…</div>
+          )}
+          {filteredFoods.length === 0 && !loadingProducts ? (
             <p className="no-foods">No foods found in {selectedCategory}</p>
           ) : (
             <table>
@@ -161,20 +206,42 @@ const Dashboard = () => {
                 <tr>
                   <th>Food</th>
                   <th>Rate</th>
-                  <th>ID</th>
+                  <th>Description</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredFoods.map((food) => (
                   <tr key={food.id} onClick={() => handleFoodClick(food)}>
-                    <td style={{ padding: "12px" }}>{food.name}</td>
+                    <td style={{ padding: "12px" }}>{food.item}</td>
                     <td style={{ padding: "12px" }}>{food.rate}</td>
-                    <td style={{ padding: "12px" }}>{food.id}</td>
+                    <td style={{ padding: "12px" }}>{food.description}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
+        </div>
+
+        {/* Lower Big Buttons */}
+        <div className="bottom-buttons">
+          <button className="btn-big green">
+            <FaPause /> Hold Bill
+          </button>
+          <button className="btn-big orange">
+            <FaRedo /> Recall Bill
+          </button>
+          <button className="btn-big grey" onClick={clearCart}>
+            <FaTrash /> Clear Cart
+          </button>
+          <button className="btn-big red">
+            <FaPrint /> Reprint
+          </button>
+          <button className="btn-big blue">
+            <FaSync /> Refresh
+          </button>
+          <button className="btn-big purple">
+            <FaGift /> Voucher
+          </button>
         </div>
       </div>
 
@@ -201,7 +268,7 @@ const Dashboard = () => {
             {cart.map((item) => (
               <div key={item.id} className="cart-item">
                 <span>
-                  {item.name} x {item.qty}
+                  {item.item} x {item.qty}
                 </span>
                 <span>KES {item.rate * item.qty}</span>
                 <FaTrashAlt
@@ -220,16 +287,17 @@ const Dashboard = () => {
           </h2>
           <button
             style={{ height: "50px" }}
-            className="btn btn-primary w-100 mb-2"
+            className="btn btn-primary w-100 mb-2 d-flex align-items-center justify-content-center gap-2"
           >
-            Checkout
+            <FaShare /> Send Order
           </button>
-          <div className="d-flex gap-2">
-            <button className="btn btn-secondary flex-fill">Hold Bill</button>
-            <button className="btn btn-danger flex-fill" onClick={clearCart}>
-              Clear Cart
-            </button>
-          </div>
+
+          <button
+            style={{ height: "50px", background: "#092a6dff", color: "white" }}
+            className="btn w-100 mb-2 d-flex align-items-center justify-content-center gap-2"
+          >
+            <FaCreditCard /> Checkout
+          </button>
         </div>
       </div>
     </div>

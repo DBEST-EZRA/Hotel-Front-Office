@@ -115,6 +115,7 @@ const Inventory = () => {
     }
   };
 
+  // TO CHANGE
   const categories = ["Beverages", "Main Course", "Snacks", "Desserts"];
 
   return (
@@ -135,7 +136,7 @@ const Inventory = () => {
               value={formData.item}
               onChange={handleChange}
               className="form-control"
-              placeholder="Enter food name"
+              placeholder=""
               required
             />
           </div>
@@ -149,7 +150,7 @@ const Inventory = () => {
               value={formData.description}
               onChange={handleChange}
               className="form-control"
-              placeholder="Short description (e.g. 500g, large plate)"
+              placeholder="Short Description"
             />
           </div>
 
@@ -163,7 +164,7 @@ const Inventory = () => {
               value={formData.rate}
               onChange={handleChange}
               className="form-control"
-              placeholder="Enter price"
+              placeholder="price"
               required
             />
           </div>
@@ -262,31 +263,23 @@ const Inventory = () => {
       </div>
 
       {/* Table */}
+
       <div className="table-responsive">
-        <table className="table table-bordered">
-          <thead style={{ background: "#3c51a1", color: "white" }}>
+        <table className="table table-striped table-sm align-middle">
+          <thead className="text-white" style={{ backgroundColor: "#3c51a1" }}>
             <tr>
-              <th style={{ background: "#3c51a1", color: "white" }}>Item</th>
-              <th style={{ background: "#3c51a1", color: "white" }}>
-                Description
-              </th>
-              <th style={{ background: "#3c51a1", color: "white" }}>
-                Category
-              </th>
-              <th style={{ background: "#3c51a1", color: "white" }}>Rate</th>
-              <th style={{ background: "#3c51a1", color: "white" }}>VAT</th>
-              <th
-                style={{ background: "#3c51a1", color: "white" }}
-                className="text-center"
-              >
-                Actions
-              </th>
+              <th>Item</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Rate</th>
+              <th>VAT</th>
+              <th className="text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="text-center p-4">
+                <td colSpan={6} className="text-center py-3">
                   Loading...
                 </td>
               </tr>
@@ -301,13 +294,13 @@ const Inventory = () => {
                   <td className="text-center">
                     <button
                       onClick={() => handleEdit(item)}
-                      className="btn btn-link text-primary"
+                      className="btn btn-sm btn-outline-primary me-2"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="btn btn-link text-danger"
+                      className="btn btn-sm btn-outline-danger"
                     >
                       Delete
                     </button>
@@ -316,7 +309,7 @@ const Inventory = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="text-center p-4">
+                <td colSpan={6} className="text-center py-3">
                   No items found
                 </td>
               </tr>
