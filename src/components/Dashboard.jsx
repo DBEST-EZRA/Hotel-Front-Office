@@ -33,6 +33,7 @@ const Dashboard = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [refresh, setRefresh] = useState(0);
   const storedUser = sessionStorage.getItem("user");
   const storeId = storedUser ? JSON.parse(storedUser).storeid : null;
 
@@ -41,8 +42,11 @@ const Dashboard = () => {
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  // fetching categories
+  // New
+
   useEffect(() => {
+    if (!storeId) return;
+
     const fetchCategories = async () => {
       try {
         const res = await axios.get(
@@ -60,31 +64,6 @@ const Dashboard = () => {
       }
     };
 
-    if (storeId) fetchCategories();
-  }, [storeId]);
-
-  // Time Display
-
-  useEffect(() => {
-    const updateDateTime = () => {
-      const now = new Date();
-      const options = {
-        weekday: "long", // Friday
-        day: "numeric", // 3
-        hour: "2-digit", // 10
-        minute: "2-digit", // 57
-        second: "2-digit", // 08
-        hour12: true, // AM/PM format
-      };
-      setCurrentDateTime(now.toLocaleString("en-US", options));
-    };
-
-    updateDateTime(); // initial load
-    const interval = setInterval(updateDateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
     const fetchInventory = async () => {
       setLoadingProducts(true);
       try {
@@ -110,8 +89,83 @@ const Dashboard = () => {
       setLoadingProducts(false);
     };
 
+    fetchCategories();
     fetchInventory();
+  }, [storeId, refresh]);
+
+  const handleRefresh = () => setRefresh((prev) => prev + 1);
+
+  // fetching categories
+  // useEffect(() => {
+  //   const fetchCategories = async () => {
+  //     try {
+  //       const res = await axios.get(
+  //         `http://localhost:5000/categories?storeid=${storeId}`
+  //       );
+  //       // console.log("Categories fetched:", res.data);
+  //       setCategories(res.data);
+  //       if (res.data.length > 0) {
+  //         setSelectedCategory(res.data[0].category);
+  //       }
+  //     } catch (err) {
+  //       console.error("Error fetching categories:", err.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   if (storeId) fetchCategories();
+  // }, [storeId]);
+
+  // Time Display
+
+  useEffect(() => {
+    const updateDateTime = () => {
+      const now = new Date();
+      const options = {
+        weekday: "long", // Friday
+        day: "numeric", // 3
+        hour: "2-digit", // 10
+        minute: "2-digit", // 57
+        second: "2-digit", // 08
+        hour12: true, // AM/PM format
+      };
+      setCurrentDateTime(now.toLocaleString("en-US", options));
+    };
+
+    updateDateTime(); // initial load
+    const interval = setInterval(updateDateTime, 1000);
+    return () => clearInterval(interval);
   }, []);
+
+  // useEffect(() => {
+  //   const fetchInventory = async () => {
+  //     setLoadingProducts(true);
+  //     try {
+  //       // Get user from session storage
+  //       const storedUser = sessionStorage.getItem("user");
+  //       if (!storedUser) throw new Error("User not found in sessionStorage");
+
+  //       const user = JSON.parse(storedUser);
+  //       const storeId = user.storeid;
+
+  //       if (!storeId) throw new Error("Store ID missing");
+
+  //       // ✅ Use axios with params (safer & cleaner)
+  //       const { data } = await axios.get("http://localhost:5000/inventory", {
+  //         params: { storeId },
+  //       });
+
+  //       setProducts(data);
+  //     } catch (error) {
+  //       console.error("Error fetching inventory:", error.message);
+  //       setProducts([]); // fallback to empty list
+  //     }
+  //     setLoadingProducts(false);
+  //   };
+
+  //   fetchInventory();
+  // }, []);
 
   useEffect(() => {
     const generateBillNo = () => {
@@ -263,7 +317,7 @@ const Dashboard = () => {
           <button className="btn-big red">
             <FaPrint /> Reprint
           </button>
-          <button className="btn-big blue">
+          <button className="btn-big blue" onClick={handleRefresh}>
             <FaSync /> Refresh
           </button>
           <button className="btn-big purple">
