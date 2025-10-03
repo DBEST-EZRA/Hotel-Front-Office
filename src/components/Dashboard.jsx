@@ -22,57 +22,48 @@ import {
 import "./Dashboard.css";
 
 const Dashboard = () => {
-  // 🔧 Dummy Data
-  const categories = [
-    "Starters",
-    "Main Course",
-    "Desserts",
-    "Drinks",
-    "Specials",
-    "Soups",
-    "Salads",
-    "Sandwiches",
-    "Pizza",
-    "Pasta",
-    "Burgers",
-    "Seafood",
-    "Grill",
-    "Steaks",
-    "Chicken",
-    "Vegetarian",
-    "Vegan",
-    "Breakfast",
-    "Lunch",
-    "Dinner",
-    "Beer",
-    "Whiskey",
-    "Wines",
-    "Cocktails",
-    "Juices",
-    "Soft Drinks",
-    "Tea",
-    "Coffee",
-    "Smoothies",
-    "Shakes",
-    "Snacks",
-    "Sides",
-  ];
-
-  const [selectedCategory, setSelectedCategory] = useState(categories[0]);
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [billNo, setBillNo] = useState("");
   const navigate = useNavigate();
   const [user, setUser] = useState({ name: "User" });
   const [currentDateTime, setCurrentDateTime] = useState("");
-
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const storedUser = sessionStorage.getItem("user");
+  const storeId = storedUser ? JSON.parse(storedUser).storeid : null;
 
   useEffect(() => {
     const storedUser = sessionStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
+
+  // fetching categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:5000/categories?storeid=${storeId}`
+        );
+        // console.log("Categories fetched:", res.data);
+        setCategories(res.data);
+        if (res.data.length > 0) {
+          setSelectedCategory(res.data[0].category);
+        }
+      } catch (err) {
+        console.error("Error fetching categories:", err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (storeId) fetchCategories();
+  }, [storeId]);
+
+  // Time Display
 
   useEffect(() => {
     const updateDateTime = () => {
@@ -158,7 +149,7 @@ const Dashboard = () => {
 
   const filteredFoods = products.filter(
     (f) =>
-      f.category === selectedCategory &&
+      (!selectedCategory || f.category === selectedCategory) &&
       f.item.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -176,17 +167,27 @@ const Dashboard = () => {
       <div className="left-section">
         <h5 className="section-title">Categories</h5>
         <div className="category-list">
-          {categories.map((cat, index) => (
-            <div
-              key={index}
-              className={`category-card ${
-                selectedCategory === cat ? "active" : ""
-              }`}
-              onClick={() => setSelectedCategory(cat)}
-            >
-              {cat}
+          {loading ? (
+            <div className="d-flex justify-content-center p-3">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
             </div>
-          ))}
+          ) : categories.length === 0 ? (
+            <p className="no-categories">No categories found</p>
+          ) : (
+            categories.map((cat) => (
+              <div
+                key={cat.id}
+                className={`category-card ${
+                  selectedCategory === cat.category ? "active" : ""
+                }`}
+                onClick={() => setSelectedCategory(cat.category)}
+              >
+                {cat.category}
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -218,7 +219,11 @@ const Dashboard = () => {
         {/* Food Table */}
         <div className="food-list">
           {loadingProducts && (
-            <div className="p-2 text-center text-muted">Loading inventory…</div>
+            <div className="d-flex justify-content-center p-3">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
           )}
           {filteredFoods.length === 0 && !loadingProducts ? (
             <p className="no-foods">No foods found in {selectedCategory}</p>
