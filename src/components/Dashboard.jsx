@@ -7,7 +7,7 @@ import {
   FaTimes,
   FaTrashAlt,
   FaShoppingCart,
-  FaUser,
+  FaUserCircle,
   FaPause,
   FaRedo,
   FaTrash,
@@ -64,6 +64,7 @@ const Dashboard = () => {
   const [billNo, setBillNo] = useState("");
   const navigate = useNavigate();
   const [user, setUser] = useState({ name: "User" });
+  const [currentDateTime, setCurrentDateTime] = useState("");
 
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
@@ -71,6 +72,25 @@ const Dashboard = () => {
   useEffect(() => {
     const storedUser = sessionStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
+
+  useEffect(() => {
+    const updateDateTime = () => {
+      const now = new Date();
+      const options = {
+        weekday: "long", // Friday
+        day: "numeric", // 3
+        hour: "2-digit", // 10
+        minute: "2-digit", // 57
+        second: "2-digit", // 08
+        hour12: true, // AM/PM format
+      };
+      setCurrentDateTime(now.toLocaleString("en-US", options));
+    };
+
+    updateDateTime(); // initial load
+    const interval = setInterval(updateDateTime, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -255,14 +275,24 @@ const Dashboard = () => {
 
       {/* Right: Cart */}
       <div className="right-section">
-        <div className="d-flex gap-2 user-info">
-          <FaUser /> <span>{user?.name || "User"}</span>
+        <div className="d-flex gap-3 user-info align-items-center">
+          {/* User Info */}
+          <div className="d-flex align-items-center gap-2">
+            <FaUserCircle size={20} />
+            <span>{user?.name || "User"}</span>
+          </div>
+
+          {/* Logout */}
           <span
             onClick={handleLogout}
             style={{ cursor: "pointer", color: "red" }}
+            className="d-flex align-items-center gap-1"
           >
-            <FaSignOutAlt style={{ marginLeft: "8px", color: "red" }} /> Logout
+            <FaSignOutAlt /> Logout
           </span>
+
+          {/* Day, Date & Time */}
+          <span>{currentDateTime}</span>
         </div>
 
         <div className="cart-section">
