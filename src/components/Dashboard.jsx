@@ -16,6 +16,8 @@ import {
   FaGift,
   FaShare,
   FaCreditCard,
+  FaRegClock,
+  FaUtensils,
 } from "react-icons/fa";
 import "./Dashboard.css";
 
@@ -241,6 +243,12 @@ const Dashboard = () => {
           </button>
           <button className="btn-big purple">
             <FaGift /> Voucher
+          </button>
+          <button className="btn-big blue">
+            <FaRegClock /> Pending Bills
+          </button>
+          <button className="btn-big grey">
+            <FaUtensils /> Menu Items
           </button>
         </div>
       </div>
