@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
+import useNetworkStatus from "../hooks/useNetworkStatus";
 import {
   FaSearch,
   FaSignOutAlt,
@@ -22,6 +24,7 @@ import {
 import "./Dashboard.css";
 
 const Dashboard = () => {
+  useNetworkStatus();
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [billNo, setBillNo] = useState("");
@@ -93,29 +96,12 @@ const Dashboard = () => {
     fetchInventory();
   }, [storeId, refresh]);
 
-  const handleRefresh = () => setRefresh((prev) => prev + 1);
-
-  // fetching categories
-  // useEffect(() => {
-  //   const fetchCategories = async () => {
-  //     try {
-  //       const res = await axios.get(
-  //         `http://localhost:5000/categories?storeid=${storeId}`
-  //       );
-  //       // console.log("Categories fetched:", res.data);
-  //       setCategories(res.data);
-  //       if (res.data.length > 0) {
-  //         setSelectedCategory(res.data[0].category);
-  //       }
-  //     } catch (err) {
-  //       console.error("Error fetching categories:", err.message);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   if (storeId) fetchCategories();
-  // }, [storeId]);
+  const handleRefresh = () => {
+    setRefresh((prev) => prev + 1);
+    toast.success("Data refreshed successfully!", {
+      progress: undefined, // uses default animated progress bar
+    });
+  };
 
   // Time Display
 
@@ -137,35 +123,6 @@ const Dashboard = () => {
     const interval = setInterval(updateDateTime, 1000);
     return () => clearInterval(interval);
   }, []);
-
-  // useEffect(() => {
-  //   const fetchInventory = async () => {
-  //     setLoadingProducts(true);
-  //     try {
-  //       // Get user from session storage
-  //       const storedUser = sessionStorage.getItem("user");
-  //       if (!storedUser) throw new Error("User not found in sessionStorage");
-
-  //       const user = JSON.parse(storedUser);
-  //       const storeId = user.storeid;
-
-  //       if (!storeId) throw new Error("Store ID missing");
-
-  //       // ✅ Use axios with params (safer & cleaner)
-  //       const { data } = await axios.get("http://localhost:5000/inventory", {
-  //         params: { storeId },
-  //       });
-
-  //       setProducts(data);
-  //     } catch (error) {
-  //       console.error("Error fetching inventory:", error.message);
-  //       setProducts([]); // fallback to empty list
-  //     }
-  //     setLoadingProducts(false);
-  //   };
-
-  //   fetchInventory();
-  // }, []);
 
   useEffect(() => {
     const generateBillNo = () => {
@@ -199,6 +156,15 @@ const Dashboard = () => {
 
   const clearCart = () => {
     setCart([]);
+    toast.info("Cart cleared", {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+    });
   };
 
   const filteredFoods = products.filter(
