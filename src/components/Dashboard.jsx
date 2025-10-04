@@ -35,10 +35,12 @@ const Dashboard = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingOrder, setLoadingOrder] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const storedUser = sessionStorage.getItem("user");
   const storeId = storedUser ? JSON.parse(storedUser).storeid : null;
+  const username = user?.name;
 
   useEffect(() => {
     const storedUser = sessionStorage.getItem("user");
@@ -124,17 +126,18 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const generateBillNo = () => {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let result = "";
+    for (let i = 0; i < 6; i++) {
+      result += characters.charAt(
+        Math.floor(Math.random() * characters.length)
+      );
+    }
+    return result;
+  };
+
   useEffect(() => {
-    const generateBillNo = () => {
-      const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-      let result = "";
-      for (let i = 0; i < 6; i++) {
-        result += characters.charAt(
-          Math.floor(Math.random() * characters.length)
-        );
-      }
-      return result;
-    };
     setBillNo(generateBillNo());
   }, []);
 
@@ -165,6 +168,55 @@ const Dashboard = () => {
       draggable: true,
       theme: "colored",
     });
+  };
+
+  //Function Start
+  //Sending Order
+  const handleSendOrder = async () => {
+    if (cart.length === 0) {
+      toast.error("No Food in Cart!", {
+        progress: undefined, // uses default animated progress bar
+      });
+      return;
+    }
+
+    setLoadingOrder(true);
+
+    // Build request body
+    const payload = {
+      billno: billNo,
+      servedby: username,
+      paymentstatus: "unpaid", // default
+      total,
+      paymentmethod: "",
+      storeid: storeId,
+      vat: 0,
+      items: cart.map((item) => ({
+        name: item.item,
+        rate: item.rate,
+        quantity: item.qty,
+        vat: 0,
+      })),
+    };
+
+    try {
+      const res = await axios.post("http://localhost:5000/sales", payload);
+      console.log("Sale recorded:", res.data);
+
+      setCart([]);
+      setBillNo(generateBillNo());
+      toast.success("Order Sent Successfully!", {
+        progress: undefined, // uses default animated progress bar
+      });
+    } catch (err) {
+      console.error(err);
+      setBillNo(generateBillNo());
+      toast.error("Failed to Sent Order!", {
+        progress: undefined, // uses default animated progress bar
+      });
+    } finally {
+      setLoadingOrder(false); // stop loading
+    }
   };
 
   const filteredFoods = products.filter(
@@ -351,8 +403,23 @@ const Dashboard = () => {
           <button
             style={{ height: "50px" }}
             className="btn btn-primary w-100 mb-2 d-flex align-items-center justify-content-center gap-2"
+            onClick={handleSendOrder}
+            disabled={loadingOrder} // ✅ disable button while sending
           >
-            <FaShare /> Send Order
+            {loadingOrder ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Sending Order...
+              </>
+            ) : (
+              <>
+                <FaShare /> Send Order
+              </>
+            )}
           </button>
 
           <button
