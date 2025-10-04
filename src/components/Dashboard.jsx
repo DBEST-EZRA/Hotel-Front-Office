@@ -464,10 +464,16 @@ const Dashboard = () => {
         tabIndex="-1"
         aria-hidden="true"
       >
-        <div className="modal-dialog modal-lg">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Pending Bills</h5>
+        <div className="modal-dialog modal-lg modal-dialog-scrollable">
+          <div
+            className="modal-content"
+            style={{ backgroundColor: "#c2d3e4ff" }}
+          >
+            <div
+              className="modal-header"
+              style={{ backgroundColor: "#86b3e0ff" }}
+            >
+              <h5 className="modal-title fw-bold">Pending Bills</h5>
               <button
                 type="button"
                 className="btn-close"
@@ -475,7 +481,7 @@ const Dashboard = () => {
                 aria-label="Close"
               ></button>
             </div>
-            <div className="modal-body">
+            <div className="modal-body" style={{ fontSize: "0.9rem" }}>
               {loadingSales ? (
                 <p>Loading...</p>
               ) : pendingSales.length === 0 ? (
@@ -483,17 +489,30 @@ const Dashboard = () => {
               ) : (
                 <div className="accordion" id="pendingBillsAccordion">
                   {pendingSales.map((sale, idx) => (
-                    <div className="accordion-item" key={sale.id}>
+                    <div
+                      className="accordion-item shadow-sm mb-3 rounded"
+                      key={sale.id}
+                      style={{ border: "1px solid #dee2e6" }}
+                    >
                       <h2 className="accordion-header" id={`heading${idx}`}>
                         <button
-                          className="accordion-button collapsed"
+                          className="accordion-button collapsed fw-bold"
                           type="button"
                           data-bs-toggle="collapse"
                           data-bs-target={`#collapse${idx}`}
                           aria-expanded="false"
                           aria-controls={`collapse${idx}`}
+                          style={{
+                            fontSize: "0.9rem",
+                            backgroundColor: "#f1f3f5",
+                            color: "#333",
+                            minHeight: "60px",
+                          }}
                         >
-                          Bill No: {sale.billno} — Total: KES {sale.total}
+                          Bill No: {sale.billno} —{" "}
+                          <span className="ms-2 text-primary">
+                            Total: KES {sale.total}
+                          </span>
                         </button>
                       </h2>
                       <div
@@ -502,21 +521,27 @@ const Dashboard = () => {
                         aria-labelledby={`heading${idx}`}
                         data-bs-parent="#pendingBillsAccordion"
                       >
-                        <div className="accordion-body">
-                          <ul className="list-group mb-3">
+                        <div className="accordion-body bg-white">
+                          <ul className="list-group mb-3 small">
                             {sale.sale_item.map((item, i) => (
                               <li
                                 key={i}
-                                className="list-group-item d-flex justify-content-between"
+                                className="list-group-item d-flex justify-content-between align-items-center"
+                                style={{ fontSize: "0.85rem" }}
                               >
-                                <span>
+                                <span className="fw-medium">
                                   {item.name} x {item.quantity}
                                 </span>
-                                <span>KES {item.rate * item.quantity}</span>
+                                <span className="text-muted">
+                                  @ {item.rate}
+                                </span>
+                                <span className="fw-bold text-dark">
+                                  KES {item.rate * item.quantity}
+                                </span>
                               </li>
                             ))}
                           </ul>
-                          <button className="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2">
+                          <button className="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2 fw-bold">
                             <FaCreditCard /> Checkout
                           </button>
                         </div>
