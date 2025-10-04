@@ -38,6 +38,8 @@ const Dashboard = () => {
   const [loadingOrder, setLoadingOrder] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [refresh, setRefresh] = useState(0);
+  const [pendingSales, setPendingSales] = useState([]);
+  const [loadingSales, setLoadingSales] = useState(false);
   const storedUser = sessionStorage.getItem("user");
   const storeId = storedUser ? JSON.parse(storedUser).storeid : null;
   const username = user?.name;
@@ -227,6 +229,26 @@ const Dashboard = () => {
 
   const total = cart.reduce((sum, item) => sum + item.rate * item.qty, 0);
 
+  // Fetching Pending Sales
+  const fetchPendingSales = async () => {
+    try {
+      setLoadingSales(true);
+      const res = await axios.get("http://localhost:5000/sales", {
+        params: { storeid: storeId },
+      });
+
+      // filter by servedby === username
+      const filtered = res.data.filter(
+        (sale) => sale.servedby === username && sale.paymentstatus === "unpaid"
+      );
+      setPendingSales(filtered);
+    } catch (err) {
+      console.error("Error fetching sales:", err);
+    } finally {
+      setLoadingSales(false);
+    }
+  };
+
   const handleLogout = () => {
     sessionStorage.removeItem("accessToken");
     sessionStorage.removeItem("user");
@@ -262,7 +284,6 @@ const Dashboard = () => {
           )}
         </div>
       </div>
-
       {/* Middle: Food List + Search + Summary Cards */}
       {/* Middle: Food List + Search + Action Buttons */}
       <div className="middle-section">
@@ -341,7 +362,12 @@ const Dashboard = () => {
           <button className="btn-big purple">
             <FaGift /> Voucher
           </button>
-          <button className="btn-big blue">
+          <button
+            className="btn-big blue"
+            data-bs-toggle="modal"
+            data-bs-target="#pendingBillsModal"
+            onClick={fetchPendingSales} // fetch on open
+          >
             <FaRegClock /> Pending Bills
           </button>
           <button className="btn-big grey">
@@ -349,7 +375,6 @@ const Dashboard = () => {
           </button>
         </div>
       </div>
-
       {/* Right: Cart */}
       <div className="right-section">
         <div className="d-flex gap-3 user-info align-items-center">
@@ -428,6 +453,80 @@ const Dashboard = () => {
           >
             <FaCreditCard /> Checkout
           </button>
+        </div>
+      </div>
+
+      {/* // Pending Bills Modal */}
+
+      <div
+        className="modal fade"
+        id="pendingBillsModal"
+        tabIndex="-1"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Pending Bills</h5>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body">
+              {loadingSales ? (
+                <p>Loading...</p>
+              ) : pendingSales.length === 0 ? (
+                <p className="text-muted">No pending bills.</p>
+              ) : (
+                <div className="accordion" id="pendingBillsAccordion">
+                  {pendingSales.map((sale, idx) => (
+                    <div className="accordion-item" key={sale.id}>
+                      <h2 className="accordion-header" id={`heading${idx}`}>
+                        <button
+                          className="accordion-button collapsed"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target={`#collapse${idx}`}
+                          aria-expanded="false"
+                          aria-controls={`collapse${idx}`}
+                        >
+                          Bill No: {sale.billno} — Total: KES {sale.total}
+                        </button>
+                      </h2>
+                      <div
+                        id={`collapse${idx}`}
+                        className="accordion-collapse collapse"
+                        aria-labelledby={`heading${idx}`}
+                        data-bs-parent="#pendingBillsAccordion"
+                      >
+                        <div className="accordion-body">
+                          <ul className="list-group mb-3">
+                            {sale.sale_item.map((item, i) => (
+                              <li
+                                key={i}
+                                className="list-group-item d-flex justify-content-between"
+                              >
+                                <span>
+                                  {item.name} x {item.quantity}
+                                </span>
+                                <span>KES {item.rate * item.quantity}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <button className="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2">
+                            <FaCreditCard /> Checkout
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
