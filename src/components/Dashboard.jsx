@@ -39,7 +39,10 @@ const Dashboard = () => {
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const [pendingSales, setPendingSales] = useState([]);
+  const [reprint, setReprint] = useState([]);
   const [loadingSales, setLoadingSales] = useState(false);
+  const [loadingReprint, setLoadingReprint] = useState(false);
+  const [loadingCheckoutId, setLoadingCheckoutId] = useState(null);
   const storedUser = sessionStorage.getItem("user");
   const storeId = storedUser ? JSON.parse(storedUser).storeid : null;
   const username = user?.name;
@@ -221,6 +224,209 @@ const Dashboard = () => {
     }
   };
 
+  // Pending Bills Checkout
+  // Pending Bills Checkout
+  // Pending Bills Checkout
+  const handleCheckout = async (sale) => {
+    try {
+      setLoadingCheckoutId(sale.id);
+      // Update payment status to "paid"
+      await axios.put(`http://localhost:5000/sales/${sale.id}`, {
+        billno: sale.billno,
+        servedby: sale.servedby,
+        paymentstatus: "paid", // mark as paid
+        total: sale.total,
+        paymentmethod: sale.paymentmethod || "Cash",
+        storeid: sale.storeid,
+        vat: sale.vat || 0,
+      });
+
+      // ✅ 2️⃣ Fetch store details
+      const res = await axios.get("http://localhost:5000/stores", {
+        params: { storeId },
+      });
+
+      if (!res.data || res.data.length === 0) {
+        toast.error("Store details not found!");
+        return;
+      }
+
+      const store = res.data[0];
+      const now = new Date();
+
+      // ✅ 3️⃣ Build receipt HTML
+      const receiptWindow = window.open("", "PRINT", "height=600,width=400");
+
+      const receiptHtml = `
+      <html>
+        <head>
+          <title>Receipt</title>
+          <style>
+            @page { size: 80mm auto; margin: 0; }
+            body {
+              font-family: monospace;
+              width: 80mm;
+              margin: 0;
+              padding: 10px;
+              font-size: 12px;
+            }
+            .center { text-align: center; }
+            .bold { font-weight: bold; }
+            .line { border-top: 1px dashed #000; margin: 5px 0; }
+            .totals { margin-top: 5px; }
+            .item { display: flex; justify-content: space-between; }
+            .small { font-size: 11px; }
+            .cut { break-after: page; }
+          </style>
+        </head>
+        <body>
+          <div class="center bold">${store.name}</div>
+          <div class="center small">${store.phone || ""} | ${
+        store.email || ""
+      }</div>
+          <div class="line"></div>
+          <div><b>Bill No:</b> ${sale.billno}</div>
+          <div><b>Served By:</b> ${sale.servedby}</div>
+          <div><b>Date:</b> ${now.toLocaleString()}</div>
+          <div><b>Payment:</b> ${sale.paymentmethod || "Cash"}</div>
+          <div class="line"></div>
+
+          ${sale.sale_item
+            .map(
+              (item) => `
+              <div class="item">
+                <span>${item.name} x ${item.quantity}</span>
+                <span>KES ${(item.rate * item.quantity).toFixed(2)}</span>
+              </div>
+            `
+            )
+            .join("")}
+
+          <div class="line"></div>
+          <div class="totals bold">
+            <div class="item">
+              <span>Total</span>
+              <span>KES ${sale.total}</span>
+            </div>
+          </div>
+          <div class="center small cut">Thank you for your business!</div>
+        </body>
+      </html>
+    `;
+
+      // ✅ 4️⃣ Print the receipt
+      receiptWindow.document.write(receiptHtml);
+      receiptWindow.document.close();
+      receiptWindow.focus();
+      receiptWindow.print();
+      receiptWindow.close();
+
+      // ✅ 5️⃣ Notify success
+      toast.success("Checkout complete and receipt printed!");
+    } catch (err) {
+      console.error("Checkout error:", err);
+      toast.error("Failed to complete checkout!");
+    } finally {
+      setLoadingCheckoutId(null);
+    }
+  };
+
+  // Dashboard Checkout
+  // Dashboard Checkout
+  // Dashboard Checkout
+  // Dashboard Checkout
+
+  const handleCartCheckout = async () => {
+    if (cart.length === 0) {
+      toast.error("No items in cart!");
+      return;
+    }
+
+    try {
+      // 1️⃣ Fetch store details
+      const res = await axios.get("http://localhost:5000/stores", {
+        params: { storeId },
+      });
+
+      if (!res.data || res.data.length === 0) {
+        toast.error("Store details not found!");
+        return;
+      }
+
+      const store = res.data[0];
+      const now = new Date();
+
+      // 2️⃣ Build receipt HTML
+      const receiptWindow = window.open("", "PRINT", "height=600,width=400");
+
+      const receiptHtml = `
+      <html>
+        <head>
+          <title>Receipt</title>
+          <style>
+            @page { size: 80mm auto; margin: 0; }
+            body { font-family: monospace; width: 80mm; margin: 0; padding: 10px; font-size: 12px; }
+            .center { text-align: center; }
+            .bold { font-weight: bold; }
+            .line { border-top: 1px dashed #000; margin: 5px 0; }
+            .totals { margin-top: 5px; }
+            .item { display: flex; justify-content: space-between; }
+            .small { font-size: 11px; }
+            .cut { break-after: page; } /* simulates auto-cut */
+          </style>
+        </head>
+        <body>
+          <div class="center bold">${store.name}</div>
+          <div class="center small">${store.phone || ""} | ${
+        store.email || ""
+      }</div>
+          <div class="line"></div>
+          <div><b>Bill No:</b> ${billNo}</div>
+          <div><b>Served By:</b> ${username}</div>
+          <div><b>Date:</b> ${now.toLocaleString()}</div>
+          <div><b>Payment:</b> ${"CASH"}</div>
+          <div class="line"></div>
+
+          ${cart
+            .map(
+              (item) => `
+              <div class="item">
+                <span>${item.item} x ${item.qty}</span>
+                <span>KES ${(item.rate * item.qty).toFixed(2)}</span>
+              </div>
+            `
+            )
+            .join("")}
+
+          <div class="line"></div>
+          <div class="totals bold">
+            <div class="item">
+              <span>Total</span>
+              <span>KES ${total.toFixed(2)}</span>
+            </div>
+          </div>
+          <div class="center small cut">Thank you for your business!</div>
+        </body>
+      </html>
+    `;
+
+      // 3️⃣ Print
+      receiptWindow.document.write(receiptHtml);
+      receiptWindow.document.close();
+      receiptWindow.focus();
+      receiptWindow.print();
+      receiptWindow.close();
+
+      // 4️⃣ Reset cart after checkout
+      handleSendOrder();
+      setCart([]);
+      setBillNo(generateBillNo());
+    } catch (err) {
+      console.error("Checkout error:", err);
+      toast.error("Failed to generate receipt!");
+    }
+  };
+
   const filteredFoods = products.filter(
     (f) =>
       (!selectedCategory || f.category === selectedCategory) &&
@@ -246,6 +452,27 @@ const Dashboard = () => {
       console.error("Error fetching sales:", err);
     } finally {
       setLoadingSales(false);
+    }
+  };
+
+  // Fetching Sales for Receipt Reprint
+  const handleReprint = async () => {
+    try {
+      setLoadingReprint(true);
+      const res = await axios.get("http://localhost:5000/sales", {
+        params: { storeid: storeId },
+      });
+
+      // filter by servedby === username
+      const filtered = res.data.filter(
+        (receipt) =>
+          receipt.servedby === username && receipt.paymentstatus === "paid"
+      );
+      setReprint(filtered);
+    } catch (err) {
+      console.error("Error fetching sales:", err);
+    } finally {
+      setLoadingReprint(false);
     }
   };
 
@@ -353,7 +580,12 @@ const Dashboard = () => {
           <button className="btn-big grey" onClick={clearCart}>
             <FaTrash /> Clear Cart
           </button>
-          <button className="btn-big red">
+          <button
+            className="btn-big red"
+            data-bs-toggle="modal"
+            data-bs-target="#reprintModal"
+            onClick={handleReprint}
+          >
             <FaPrint /> Reprint
           </button>
           <button className="btn-big blue" onClick={handleRefresh}>
@@ -450,6 +682,7 @@ const Dashboard = () => {
           <button
             style={{ height: "50px", background: "#092a6dff", color: "white" }}
             className="btn w-100 mb-2 d-flex align-items-center justify-content-center gap-2"
+            onClick={handleCartCheckout}
           >
             <FaCreditCard /> Checkout
           </button>
@@ -483,7 +716,15 @@ const Dashboard = () => {
             </div>
             <div className="modal-body" style={{ fontSize: "0.9rem" }}>
               {loadingSales ? (
-                <p>Loading...</p>
+                <div className="d-flex flex-column align-items-center justify-content-center py-5">
+                  <div
+                    className="spinner-border text-primary mb-3"
+                    role="status"
+                  >
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="text-muted small">Fetching pending sales...</p>
+                </div>
               ) : pendingSales.length === 0 ? (
                 <p className="text-muted">No pending bills.</p>
               ) : (
@@ -541,8 +782,147 @@ const Dashboard = () => {
                               </li>
                             ))}
                           </ul>
-                          <button className="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2 fw-bold">
-                            <FaCreditCard /> Checkout
+                          <button
+                            className="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2 fw-bold"
+                            onClick={() => handleCheckout(sale)}
+                            disabled={loadingCheckoutId === sale.id}
+                          >
+                            {loadingCheckoutId === sale.id ? (
+                              <>
+                                <div
+                                  className="spinner-grow spinner-grow-sm text-light"
+                                  role="status"
+                                ></div>
+                                Generating Receipt...
+                              </>
+                            ) : (
+                              <>
+                                <FaCreditCard /> Checkout
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* // Reprint Receipts Modal */}
+
+      <div
+        className="modal fade"
+        id="reprintModal"
+        tabIndex="-1"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-lg modal-dialog-scrollable">
+          <div
+            className="modal-content"
+            style={{ backgroundColor: "#c2d3e4ff" }}
+          >
+            <div
+              className="modal-header"
+              style={{ backgroundColor: "#86b3e0ff" }}
+            >
+              <h5 className="modal-title fw-bold">Reprint Receipts</h5>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body" style={{ fontSize: "0.9rem" }}>
+              {loadingReprint ? (
+                <div className="d-flex flex-column align-items-center justify-content-center py-5">
+                  <div
+                    className="spinner-border text-primary mb-3"
+                    role="status"
+                  >
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="text-muted small">Fetching settled sales...</p>
+                </div>
+              ) : reprint.length === 0 ? (
+                <p className="text-muted">No settled bills.</p>
+              ) : (
+                <div className="accordion" id="pendingBillsAccordion">
+                  {reprint.map((receipt, idx) => (
+                    <div
+                      className="accordion-item shadow-sm mb-3 rounded"
+                      key={receipt.id}
+                      style={{ border: "1px solid #dee2e6" }}
+                    >
+                      <h2 className="accordion-header" id={`heading${idx}`}>
+                        <button
+                          className="accordion-button collapsed fw-bold"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target={`#collapse${idx}`}
+                          aria-expanded="false"
+                          aria-controls={`collapse${idx}`}
+                          style={{
+                            fontSize: "0.9rem",
+                            backgroundColor: "#f1f3f5",
+                            color: "#333",
+                            minHeight: "60px",
+                          }}
+                        >
+                          Bill No: {receipt.billno} —{" "}
+                          <span className="ms-2 text-primary">
+                            Total: KES {receipt.total}
+                          </span>
+                        </button>
+                      </h2>
+                      <div
+                        id={`collapse${idx}`}
+                        className="accordion-collapse collapse"
+                        aria-labelledby={`heading${idx}`}
+                        data-bs-parent="#pendingBillsAccordion"
+                      >
+                        <div className="accordion-body bg-white">
+                          <ul className="list-group mb-3 small">
+                            {receipt.sale_item.map((item, i) => (
+                              <li
+                                key={i}
+                                className="list-group-item d-flex justify-content-between align-items-center"
+                                style={{ fontSize: "0.85rem" }}
+                              >
+                                <span className="fw-medium">
+                                  {item.name} x {item.quantity}
+                                </span>
+                                <span className="text-muted">
+                                  @ {item.rate}
+                                </span>
+                                <span className="fw-bold text-dark">
+                                  KES {item.rate * item.quantity}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                          <button
+                            className="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2 fw-bold"
+                            onClick={() => handleCheckout(receipt)}
+                            disabled={loadingCheckoutId === receipt.id}
+                          >
+                            {loadingCheckoutId === receipt.id ? (
+                              <>
+                                <div
+                                  className="spinner-grow spinner-grow-sm text-light"
+                                  role="status"
+                                ></div>
+                                Generating Receipt...
+                              </>
+                            ) : (
+                              <>
+                                <FaCreditCard /> Reprint Receipt
+                              </>
+                            )}
                           </button>
                         </div>
                       </div>
