@@ -26,7 +26,7 @@ const Inventory = () => {
   const fetchInventory = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get("http://localhost:5000/inventory", {
+      const { data } = await axios.get("http://16.16.27.133:5000/inventory", {
         params: { storeId },
       });
       setInventory(data);
@@ -75,12 +75,12 @@ const Inventory = () => {
       if (editing) {
         // Update existing record
         await axios.put(
-          `http://localhost:5000/inventory/${formData.id}`,
+          `http://16.16.27.133:5000/inventory/${formData.id}`,
           formData
         );
       } else {
         // Add new record
-        await axios.post("http://localhost:5000/inventory", {
+        await axios.post("http://16.16.27.133:5000/inventory", {
           ...formData,
           storeid: storeId, // still attach storeId if you need multi-store
         });
@@ -110,7 +110,7 @@ const Inventory = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
-      await axios.delete(`http://localhost:5000/inventory/${id}`);
+      await axios.delete(`http://16.16.27.133:5000/inventory/${id}`);
       fetchInventory();
     }
   };

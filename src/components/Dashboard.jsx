@@ -60,7 +60,7 @@ const Dashboard = () => {
     const fetchCategories = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:5000/categories?storeid=${storeId}`
+          `http://16.16.27.133:5000/categories?storeid=${storeId}`
         );
         // console.log("Categories fetched:", res.data);
         setCategories(res.data);
@@ -87,7 +87,7 @@ const Dashboard = () => {
         if (!storeId) throw new Error("Store ID missing");
 
         // ✅ Use axios with params (safer & cleaner)
-        const { data } = await axios.get("http://localhost:5000/inventory", {
+        const { data } = await axios.get("http://16.16.27.133:5000/inventory", {
           params: { storeId },
         });
 
@@ -205,7 +205,7 @@ const Dashboard = () => {
     };
 
     try {
-      const res = await axios.post("http://localhost:5000/sales", payload);
+      const res = await axios.post("http://16.16.27.133:5000/sales", payload);
       console.log("Sale recorded:", res.data);
 
       setCart([]);
@@ -231,7 +231,7 @@ const Dashboard = () => {
     try {
       setLoadingCheckoutId(sale.id);
       // Update payment status to "paid"
-      await axios.put(`http://localhost:5000/sales/${sale.id}`, {
+      await axios.put(`http://16.16.27.133:5000/sales/${sale.id}`, {
         billno: sale.billno,
         servedby: sale.servedby,
         paymentstatus: "paid", // mark as paid
@@ -242,7 +242,7 @@ const Dashboard = () => {
       });
 
       // ✅ 2️⃣ Fetch store details
-      const res = await axios.get("http://localhost:5000/stores", {
+      const res = await axios.get("http://16.16.27.133:5000/stores", {
         params: { storeId },
       });
 
@@ -344,7 +344,7 @@ const Dashboard = () => {
 
     try {
       // 1️⃣ Fetch store details
-      const res = await axios.get("http://localhost:5000/stores", {
+      const res = await axios.get("http://16.16.27.133:5000/stores", {
         params: { storeId },
       });
 
@@ -439,7 +439,7 @@ const Dashboard = () => {
   const fetchPendingSales = async () => {
     try {
       setLoadingSales(true);
-      const res = await axios.get("http://localhost:5000/sales", {
+      const res = await axios.get("http://16.16.27.133:5000/sales", {
         params: { storeid: storeId },
       });
 
@@ -459,7 +459,7 @@ const Dashboard = () => {
   const handleReprint = async () => {
     try {
       setLoadingReprint(true);
-      const res = await axios.get("http://localhost:5000/sales", {
+      const res = await axios.get("http://16.16.27.133:5000/sales", {
         params: { storeid: storeId },
       });
 
