@@ -17,11 +17,14 @@ const SignIn = () => {
     setError("");
 
     try {
-      const response = await fetch("http://16.16.27.133:5000/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        "https://190d87e7fff9.ngrok-free.app/users/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const data = await response.json();
 
