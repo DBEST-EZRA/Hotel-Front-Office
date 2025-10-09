@@ -38,6 +38,8 @@ import Compliance from "./Compliance";
 import Notifications from "./Notifications";
 import GeneralReport from "./GeneralReport";
 import Categories from "./Categories";
+import Calculator from "./Calculator";
+import Database from "./Database";
 
 const AdminDashboard = () => {
   const [selected, setSelected] = useState("Restaurant Info");
@@ -74,8 +76,8 @@ const AdminDashboard = () => {
     Users: () => <Users />,
     Logs: () => <Compliance />,
     Kitchen: () => <Compliance />,
-    Calculator: () => <Compliance />,
-    Database: () => <Compliance />,
+    Calculator: () => <Calculator />,
+    Database: () => <Database />,
     Notices: () => <Notifications />,
     Logout: () => <p>Logging out...</p>,
   };
