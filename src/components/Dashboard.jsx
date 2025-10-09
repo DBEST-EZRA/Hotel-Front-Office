@@ -47,7 +47,7 @@ const Dashboard = () => {
   const storeId = storedUser ? JSON.parse(storedUser).storeid : null;
   const username = user?.name;
 
-  const BaseUrl = "https://190d87e7fff9.ngrok-free.app";
+  const BaseUrl = "https://api.volunteerconnect.co.ke";
 
   useEffect(() => {
     const storedUser = sessionStorage.getItem("user");

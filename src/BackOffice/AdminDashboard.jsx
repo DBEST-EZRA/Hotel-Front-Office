@@ -10,70 +10,101 @@ import {
   FaBalanceScale,
   FaBell,
   FaSignOutAlt,
-  FaUser,
+  FaUtensils,
+  FaTable,
+  FaCreditCard,
+  FaShoppingCart,
+  FaUniversity,
+  FaReceipt,
+  FaBook,
+  FaUserClock,
+  FaClipboardList,
+  FaCalculator,
+  FaDatabase,
+  FaStickyNote,
+  FaChevronLeft,
   FaBars,
-  FaChevronDown,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 import Settings from "./Settings";
 import Users from "./Users";
 import Inventory from "./Inventory";
 import Reports from "./Reports";
-import DailySales from "./DailySales";
-import MonthlySales from "./MonthlySales";
 import Expenses from "./Expenses";
 import Supplies from "./Supplies";
 import Compliance from "./Compliance";
-import CoA from "./CoA";
 import Notifications from "./Notifications";
 import GeneralReport from "./GeneralReport";
-import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
-  const [selected, setSelected] = useState("Settings");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [showReports, setShowReports] = useState(false);
+  const [selected, setSelected] = useState("Restaurant Info");
   const [notifications, setNotifications] = useState(3);
-  const [user, setUser] = useState({ name: "User" });
+  const [user, setUser] = useState({ name: "Admin" });
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    setNotifications(3);
-  }, []);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedUser = sessionStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  // Map components dynamically
   const Components = {
+    "Restaurant Info": () => <GeneralReport />,
     Settings: () => <Settings />,
-    Users: () => <Users />,
+    Categories: () => <Compliance />,
     Inventory: () => <Inventory />,
-    Reports: () => <Reports />,
-    "Daily Sales": () => <DailySales />,
-    "Monthly Sales": () => <MonthlySales />,
-    General: () => <GeneralReport />,
+    Tables: () => <Compliance />,
+    "Credit Customer": () => <Compliance />,
+    Suppliers: () => <Supplies />,
+    Purchases: () => <Compliance />,
+    Payment: () => <Compliance />,
+    Bank: () => <Compliance />,
     Expenses: () => <Expenses />,
-    Supplies: () => <Supplies />,
-    Compliance: () => <Compliance />,
-    CoA: () => <CoA />,
-    Notifications: () => <Notifications />,
+    Voucher: () => <Compliance />,
+    Recipe: () => <Compliance />,
+    Attendance: () => <Compliance />,
+    Payroll: () => <Compliance />,
+    "PoS Report": () => <Reports />,
+    "Accounting Reports": () => <GeneralReport />,
+    Users: () => <Users />,
+    Logs: () => <Compliance />,
+    Kitchen: () => <Compliance />,
+    Calculator: () => <Compliance />,
+    Database: () => <Compliance />,
+    Notices: () => <Notifications />,
+    Logout: () => <p>Logging out...</p>,
   };
-
-  const navigate = useNavigate();
 
   const SelectedComponent = Components[selected] || (() => <p>No Component</p>);
 
-  // Sidebar menu items (except Reports, which has submenu)
   const menuItems = [
+    { name: "Restaurant Info", icon: <FaUtensils /> },
     { name: "Settings", icon: <FaCog /> },
-    { name: "Users", icon: <FaUsers /> },
+    { name: "Categories", icon: <FaBook /> },
     { name: "Inventory", icon: <FaBoxes /> },
-    { name: "Expenses", icon: <FaMoneyBillWave /> },
-    { name: "Supplies", icon: <FaTruck /> },
-    { name: "Compliance", icon: <FaBalanceScale /> },
-    { name: "CoA", icon: <FaFileInvoiceDollar /> },
+    { name: "Tables", icon: <FaTable /> },
+    { name: "Credit Customer", icon: <FaCreditCard /> },
+    { name: "Suppliers", icon: <FaTruck /> },
+    { name: "Purchases", icon: <FaShoppingCart /> },
+    { name: "Payment", icon: <FaMoneyBillWave /> },
+    { name: "Bank", icon: <FaUniversity /> },
+    { name: "Expenses", icon: <FaReceipt /> },
+    { name: "Voucher", icon: <FaFileInvoiceDollar /> },
+    { name: "Recipe", icon: <FaBalanceScale /> },
+    { name: "Attendance", icon: <FaUserClock /> },
+    { name: "Payroll", icon: <FaClipboardList /> },
+    { name: "PoS Report", icon: <FaChartBar /> },
+    { name: "Accounting Reports", icon: <FaBook /> },
+    { name: "Users", icon: <FaUsers /> },
+    { name: "Logs", icon: <FaClipboardList /> },
+    { name: "Kitchen", icon: <FaUtensils /> },
+    { name: "Calculator", icon: <FaCalculator /> },
+    { name: "Database", icon: <FaDatabase /> },
+    { name: "Notices", icon: <FaStickyNote /> },
+    { name: "Logout", icon: <FaSignOutAlt /> },
   ];
 
   const handleLogout = () => {
@@ -82,139 +113,160 @@ const AdminDashboard = () => {
     navigate("/");
   };
 
+  const handleSelect = (name) => {
+    if (name === "Logout") return handleLogout();
+    setSelected(name);
+
+    // Auto-close sidebar on mobile
+    if (window.innerWidth <= 768) setMobileMenuOpen(false);
+  };
+
   return (
-    <div className="d-flex vh-100">
-      {/* Sidebar */}
-      <aside
-        className="bg-dark text-white d-flex flex-column"
+    <div className="d-flex flex-column vh-100 bg-light">
+      {/* Topbar */}
+      <div
+        className="d-flex align-items-center justify-content-between shadow-sm p-3 sticky-top"
         style={{
-          width: sidebarOpen ? "250px" : "70px",
-          overflowY: "auto",
-          transition: "width 0.3s ease",
+          zIndex: 1000,
+          backgroundColor: "#0d6efd",
+          color: "white",
         }}
       >
-        <div className="flex-grow-1">
-          {/* Reusable Menu Items */}
+        <div className="d-flex align-items-center gap-2">
+          {/* Mobile Menu Button */}
+          <button
+            className="btn btn-sm text-white d-md-none"
+            style={{ background: "none" }}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <FaBars size={20} />
+          </button>
+          <h5 className="fw-bold mb-0">Hotel PoS Admin</h5>
+        </div>
+
+        <div className="d-flex align-items-center gap-3">
+          {/* Notifications */}
+          <div
+            className="position-relative"
+            style={{ cursor: "pointer" }}
+            onClick={() => setSelected("Notices")}
+          >
+            <FaBell size={18} />
+            {notifications > 0 && (
+              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {notifications}
+              </span>
+            )}
+          </div>
+
+          {/* User Info */}
+          <div className="d-flex align-items-center gap-2">
+            <FaUserClock />
+            <span>{user?.name || "Admin"}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Overlay for mobile */}
+      {mobileMenuOpen && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-md-none"
+          style={{ zIndex: 1500 }}
+          onClick={() => setMobileMenuOpen(false)}
+        ></div>
+      )}
+
+      {/* Main Section */}
+      <div className="flex-grow-1 d-flex overflow-hidden">
+        {/* Sidebar */}
+        <aside
+          className={`text-white d-flex flex-column position-fixed h-100 ${
+            mobileMenuOpen ? "active" : ""
+          }`}
+          style={{
+            width: sidebarCollapsed ? "70px" : "240px",
+            backgroundColor: "#001f3f",
+            overflowY: "auto",
+            transition: "width 0.3s ease, transform 0.3s ease",
+            zIndex: 2000,
+          }}
+        >
+          {/* Collapse Button */}
+          <button
+            className="btn btn-sm text-white mt-2 ms-auto me-2"
+            style={{ background: "none" }}
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          >
+            <FaChevronLeft
+              style={{
+                transform: sidebarCollapsed ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 0.3s ease",
+              }}
+            />
+          </button>
+
           {menuItems.map((item) => (
             <div
               key={item.name}
-              className={`d-flex align-items-center p-2 rounded sidebar-item ${
-                selected === item.name ? "bg-secondary" : ""
+              onClick={() => handleSelect(item.name)}
+              className={`d-flex align-items-center gap-2 p-2 rounded mb-1 ${
+                selected === item.name ? "bg-primary" : "bg-transparent"
               }`}
-              style={{ cursor: "pointer" }}
-              onClick={() => setSelected(item.name)}
+              style={{
+                cursor: "pointer",
+                transition: "background 0.2s",
+                justifyContent: sidebarCollapsed ? "center" : "flex-start",
+              }}
             >
-              <span className="me-2">{item.icon}</span>
-              {sidebarOpen && <span>{item.name}</span>}
+              <span style={{ fontSize: "1.2rem" }}>{item.icon}</span>
+              {!sidebarCollapsed && <span>{item.name}</span>}
             </div>
           ))}
+        </aside>
 
-          {/* Reports with Submenu */}
-          <div className="mb-1">
-            <div
-              className={`d-flex align-items-center p-2 rounded sidebar-item ${
-                ["Daily Sales", "Monthly Sales"].includes(selected)
-                  ? "bg-secondary"
-                  : ""
-              }`}
-              style={{ cursor: "pointer" }}
-              onClick={() => setShowReports((prev) => !prev)}
-            >
-              <FaChartBar className="me-2" />
-              {sidebarOpen && (
-                <>
-                  <span className="flex-grow-1">Reports</span>
-                  <FaChevronDown
-                    className={`ms-auto ${showReports ? "rotate-180" : ""}`}
-                  />
-                </>
-              )}
-            </div>
-            {showReports && sidebarOpen && (
-              <div className="ms-4">
-                {["General", "Daily Sales", "Monthly Sales"].map((sub) => (
-                  <div
-                    key={sub}
-                    className={`p-2 rounded sidebar-sub-item ${
-                      selected === sub ? "bg-secondary" : ""
-                    }`}
-                    style={{ cursor: "pointer" }}
-                    onClick={() => setSelected(sub)}
-                  >
-                    {sub}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Section */}
-      <div className="flex-grow-1 d-flex flex-column">
-        {/* Topbar */}
-        <div className="d-flex align-items-center justify-content-between bg-white shadow-sm p-3">
-          {/* Toggle button (mobile) */}
-          <button
-            className="btn btn-outline-secondary d-lg-none"
-            onClick={() => setSidebarOpen((prev) => !prev)}
-          >
-            <FaBars />
-          </button>
-
-          {/* Right Section */}
-          <div className="d-flex align-items-center gap-4 ms-auto">
-            {/* Notifications */}
-            <div
-              className="position-relative"
-              style={{ cursor: "pointer" }}
-              onClick={() => setSelected("Notifications")}
-            >
-              <FaBell />
-              {notifications > 0 && (
-                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                  {notifications}
-                </span>
-              )}
-            </div>
-
-            {/* User Info */}
-            <div className="d-flex align-items-center gap-2">
-              <FaUser />
-              <span className="d-none d-sm-inline">
-                {user?.name || "Admin"}
-              </span>
-            </div>
-
-            {/* Logout */}
-            <div
-              className="d-flex align-items-center gap-2 text-danger"
-              style={{ cursor: "pointer" }}
-              onClick={handleLogout}
-            >
-              <span className="d-none d-sm-inline">Logout</span>
-              <FaSignOutAlt />
-            </div>
-          </div>
-        </div>
-
-        {/* Main Panel */}
-        <div className="flex-grow-1 overflow-auto p-3 bg-light">
-          {/* <h4 className="mb-3">{selected}</h4> */}
-          <div className="bg-white rounded shadow-sm p-3">
+        {/* Main Content */}
+        <div
+          className="flex-grow-1 p-3 overflow-auto"
+          style={{
+            marginLeft:
+              window.innerWidth <= 768
+                ? "0"
+                : sidebarCollapsed
+                ? "70px"
+                : "240px",
+            transition: "margin-left 0.3s ease",
+          }}
+        >
+          <div className="bg-white p-3 rounded shadow-sm h-100">
             <SelectedComponent />
           </div>
         </div>
       </div>
 
-      {/* CSS for hover */}
+      {/* Styles */}
       <style>{`
-        .sidebar-item:hover, .sidebar-sub-item:hover {
-          background-color: rgba(255,255,255,0.1);
+        ::-webkit-scrollbar {
+          width: 6px;
         }
-        .rotate-180 {
-          transform: rotate(180deg);
-          transition: transform 0.3s ease;
+        ::-webkit-scrollbar-thumb {
+          background-color: #0d6efd;
+          border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background-color: #0b5ed7;
+        }
+
+        @media (max-width: 768px) {
+          aside {
+            position: fixed !important;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            transform: translateX(-100%);
+          }
+          aside.active {
+            transform: translateX(0);
+          }
         }
       `}</style>
     </div>
