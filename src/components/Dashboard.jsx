@@ -106,7 +106,7 @@ const Dashboard = () => {
   const handleRefresh = () => {
     setRefresh((prev) => prev + 1);
     toast.success("Data refreshed successfully!", {
-      progress: undefined, // uses default animated progress bar
+      progress: undefined,
     });
   };
 

@@ -24,6 +24,7 @@ import {
   FaStickyNote,
   FaChevronLeft,
   FaBars,
+  FaCopyright,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -36,6 +37,7 @@ import Supplies from "./Supplies";
 import Compliance from "./Compliance";
 import Notifications from "./Notifications";
 import GeneralReport from "./GeneralReport";
+import Categories from "./Categories";
 
 const AdminDashboard = () => {
   const [selected, setSelected] = useState("Restaurant Info");
@@ -54,7 +56,7 @@ const AdminDashboard = () => {
   const Components = {
     "Restaurant Info": () => <GeneralReport />,
     Settings: () => <Settings />,
-    Categories: () => <Compliance />,
+    Categories: () => <Categories />,
     Inventory: () => <Inventory />,
     Tables: () => <Compliance />,
     "Credit Customer": () => <Compliance />,
@@ -83,6 +85,7 @@ const AdminDashboard = () => {
   const menuItems = [
     { name: "Restaurant Info", icon: <FaUtensils /> },
     { name: "Settings", icon: <FaCog /> },
+    { name: "Users", icon: <FaUsers /> },
     { name: "Categories", icon: <FaBook /> },
     { name: "Inventory", icon: <FaBoxes /> },
     { name: "Tables", icon: <FaTable /> },
@@ -98,13 +101,14 @@ const AdminDashboard = () => {
     { name: "Payroll", icon: <FaClipboardList /> },
     { name: "PoS Report", icon: <FaChartBar /> },
     { name: "Accounting Reports", icon: <FaBook /> },
-    { name: "Users", icon: <FaUsers /> },
+
     { name: "Logs", icon: <FaClipboardList /> },
     { name: "Kitchen", icon: <FaUtensils /> },
     { name: "Calculator", icon: <FaCalculator /> },
     { name: "Database", icon: <FaDatabase /> },
     { name: "Notices", icon: <FaStickyNote /> },
     { name: "Logout", icon: <FaSignOutAlt /> },
+    { name: "Beta", icon: <FaCopyright /> },
   ];
 
   const handleLogout = () => {

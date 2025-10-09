@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaSearch, FaTimes, FaBarcode } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 const Inventory = () => {
   const adminData = JSON.parse(sessionStorage.getItem("user"));
@@ -20,13 +21,16 @@ const Inventory = () => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const BaseUrl = "https://api.volunteerconnect.co.ke";
 
   // Fetch inventory from backend
   const fetchInventory = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get("http://16.16.27.133:5000/inventory", {
+      const { data } = await axios.get(`${BaseUrl}/inventory`, {
         params: { storeId },
       });
       setInventory(data);
@@ -74,17 +78,18 @@ const Inventory = () => {
     try {
       if (editing) {
         // Update existing record
-        await axios.put(
-          `http://16.16.27.133:5000/inventory/${formData.id}`,
-          formData
-        );
+        await axios.put(`${BaseUrl}/inventory/${formData.id}`, formData);
       } else {
         // Add new record
-        await axios.post("http://16.16.27.133:5000/inventory", {
+        await axios.post(`${BaseUrl}/inventory`, {
           ...formData,
-          storeid: storeId, // still attach storeId if you need multi-store
+          storeid: storeId,
         });
       }
+
+      toast.success("Success!", {
+        progress: undefined,
+      });
 
       // Reset form fields after submit
       setFormData({
@@ -93,11 +98,11 @@ const Inventory = () => {
         description: "",
         rate: "",
         category: "",
-        vat: "0", // reset to default 0%
+        vat: "0",
       });
 
       setEditing(false);
-      fetchInventory(); // Refresh inventory after add/edit
+      // fetchInventory();
     } catch (err) {
       console.error("Error saving inventory item:", err);
     }
@@ -110,13 +115,29 @@ const Inventory = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
-      await axios.delete(`http://16.16.27.133:5000/inventory/${id}`);
-      fetchInventory();
+      await axios.delete(`${BaseUrl}/inventory/${id}`);
+      // fetchInventory();
     }
+    toast.error("Item Deleted!", {
+      progress: undefined,
+    });
   };
 
-  // TO CHANGE
-  const categories = ["Beverages", "Main Course", "Snacks", "Desserts"];
+  // Dynamically Fetch Categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get(`${BaseUrl}/categories?storeid=${storeId}`);
+        setCategories(res.data || []);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (storeId) fetchCategories();
+  }, [storeId]);
 
   return (
     <div className="container py-4">
@@ -180,9 +201,9 @@ const Inventory = () => {
               required
             >
               <option value="">-- Select Category --</option>
-              {categories.map((cat, index) => (
-                <option key={index} value={cat}>
-                  {cat}
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.category}>
+                  {cat.category}
                 </option>
               ))}
             </select>
