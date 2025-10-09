@@ -40,6 +40,7 @@ import GeneralReport from "./GeneralReport";
 import Categories from "./Categories";
 import Calculator from "./Calculator";
 import Database from "./Database";
+import Restaurant from "./Restaurant";
 
 const AdminDashboard = () => {
   const [selected, setSelected] = useState("Restaurant Info");
@@ -56,7 +57,7 @@ const AdminDashboard = () => {
   }, []);
 
   const Components = {
-    "Restaurant Info": () => <GeneralReport />,
+    "Restaurant Info": () => <Restaurant />,
     Settings: () => <Settings />,
     Categories: () => <Categories />,
     Inventory: () => <Inventory />,
