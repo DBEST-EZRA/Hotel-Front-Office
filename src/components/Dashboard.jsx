@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import useNetworkStatus from "../hooks/useNetworkStatus";
+import { Modal, Button, Card } from "react-bootstrap";
 import {
   FaSearch,
   FaSignOutAlt,
@@ -43,6 +44,8 @@ const Dashboard = () => {
   const [loadingSales, setLoadingSales] = useState(false);
   const [loadingReprint, setLoadingReprint] = useState(false);
   const [loadingCheckoutId, setLoadingCheckoutId] = useState(null);
+  const [showRecallModal, setShowRecallModal] = useState(false);
+  const [heldBills, setHeldBills] = useState([]);
   const storedUser = sessionStorage.getItem("user");
   const storeId = storedUser ? JSON.parse(storedUser).storeid : null;
   const username = user?.name;
@@ -180,7 +183,7 @@ const Dashboard = () => {
   const handleSendOrder = async () => {
     if (cart.length === 0) {
       toast.error("No Food in Cart!", {
-        progress: undefined, // uses default animated progress bar
+        progress: undefined,
       });
       return;
     }
@@ -191,7 +194,7 @@ const Dashboard = () => {
     const payload = {
       billno: billNo,
       servedby: username,
-      paymentstatus: "unpaid", // default
+      paymentstatus: "unpaid",
       total,
       paymentmethod: "",
       storeid: storeId,
@@ -211,17 +214,97 @@ const Dashboard = () => {
       setCart([]);
       setBillNo(generateBillNo());
       toast.success("Order Sent Successfully!", {
-        progress: undefined, // uses default animated progress bar
+        progress: undefined,
       });
     } catch (err) {
       console.error(err);
       setBillNo(generateBillNo());
       toast.error("Failed to Sent Order!", {
-        progress: undefined, // uses default animated progress bar
+        progress: undefined,
       });
     } finally {
-      setLoadingOrder(false); // stop loading
+      setLoadingOrder(false);
     }
+  };
+
+  // Holding Bill
+  //Start
+  // Holding Bill (save to localStorage)
+  const handleHoldBill = () => {
+    if (cart.length === 0) {
+      toast.error("No Food in Cart!", { progress: undefined });
+      return;
+    }
+
+    // Build the same payload structure
+    const payload = {
+      billno: billNo,
+      servedby: username,
+      paymentstatus: "onHold", // differentiate from unpaid
+      total,
+      paymentmethod: "",
+      storeid: storeId,
+      vat: 0,
+      items: cart.map((item) => ({
+        name: item.item,
+        rate: item.rate,
+        quantity: item.qty,
+        vat: 0,
+      })),
+      date: new Date().toISOString(),
+    };
+
+    // Retrieve existing held bills
+    const heldBills = JSON.parse(localStorage.getItem("heldBills")) || [];
+
+    // Add this one
+    heldBills.push(payload);
+
+    // Save back to localStorage
+    localStorage.setItem("heldBills", JSON.stringify(heldBills));
+
+    // Clear cart & generate new bill number
+    setCart([]);
+    setBillNo(generateBillNo());
+
+    toast.success(`Bill ${payload.billno} held successfully!`, {
+      progress: undefined,
+    });
+  };
+  // End
+
+  //Retrieving held bills
+  //Start
+  const handleRecallBill = () => {
+    const stored = JSON.parse(localStorage.getItem("heldBills")) || [];
+    setHeldBills(stored);
+    setShowRecallModal(true);
+  };
+
+  const handleSelectHeldBill = (bill) => {
+    if (!bill.items || bill.items.length === 0) {
+      toast.error("This held bill has no items.");
+      return;
+    }
+
+    const formattedItems = bill.items.map((i, index) => ({
+      id: index + 1,
+      item: i.name,
+      rate: i.rate,
+      qty: i.quantity,
+    }));
+
+    setCart(formattedItems);
+
+    const stored = JSON.parse(localStorage.getItem("heldBills")) || [];
+    const updated = stored.filter((b) => b.billno !== bill.billno);
+    localStorage.setItem("heldBills", JSON.stringify(updated));
+
+    setHeldBills(updated);
+
+    setShowRecallModal(false);
+
+    toast.success(`Bill ${bill.billno} recalled and removed from held bills!`);
   };
 
   // Pending Bills Checkout
@@ -571,10 +654,10 @@ const Dashboard = () => {
 
         {/* Lower Big Buttons */}
         <div className="bottom-buttons">
-          <button className="btn-big green">
+          <button className="btn-big green" onClick={handleHoldBill}>
             <FaPause /> Hold Bill
           </button>
-          <button className="btn-big orange">
+          <button className="btn-big orange" onClick={handleRecallBill}>
             <FaRedo /> Recall Bill
           </button>
           <button className="btn-big grey" onClick={clearCart}>
@@ -934,6 +1017,51 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* New Modal  */}
+      <Modal
+        show={showRecallModal}
+        onHide={() => setShowRecallModal(false)}
+        centered
+      >
+        <Modal.Header
+          closeButton
+          style={{ background: "#3c51a1", color: "white" }}
+        >
+          <Modal.Title>Recall Held Bill</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {heldBills.length === 0 ? (
+            <p className="text-muted text-center">No held bills available.</p>
+          ) : (
+            heldBills.map((bill) => (
+              <Card
+                key={bill.billno}
+                className="mb-3 shadow-sm"
+                style={{ cursor: "pointer", borderLeft: "5px solid #88c244" }}
+                onClick={() => handleSelectHeldBill(bill)}
+              >
+                <Card.Body>
+                  <Card.Title>{bill.billno}</Card.Title>
+                  <Card.Text>
+                    <strong>Total:</strong> KES {bill.total.toLocaleString()}{" "}
+                    <br />
+                    <strong>Served By:</strong> {bill.servedby} <br />
+                    <strong>Date:</strong>{" "}
+                    {new Date(bill.date).toLocaleString()}
+                  </Card.Text>
+                </Card.Body>
+              </Card>
+            ))
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowRecallModal(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      {/* New Modal end   */}
     </div>
   );
 };
