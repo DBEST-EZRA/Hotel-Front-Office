@@ -3,7 +3,7 @@ import axios from "axios";
 import { Table, Button, Form, Spinner, Row, Col } from "react-bootstrap";
 import { FaUserPlus, FaEdit, FaTrash } from "react-icons/fa";
 
-const API_URL = "http://16.16.27.133:5000/users";
+const API_URL = "https://api.volunteerconnect.co.ke/users";
 
 const Users = () => {
   const [users, setUsers] = useState([]);

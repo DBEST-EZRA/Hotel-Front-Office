@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import useNetworkStatus from "../hooks/useNetworkStatus";
-import { Modal, Button, Card } from "react-bootstrap";
+import { Tabs, Tab, Modal, Button, Card } from "react-bootstrap";
 import {
   FaSearch,
   FaSignOutAlt,
@@ -46,6 +46,11 @@ const Dashboard = () => {
   const [loadingCheckoutId, setLoadingCheckoutId] = useState(null);
   const [showRecallModal, setShowRecallModal] = useState(false);
   const [heldBills, setHeldBills] = useState([]);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedSale, setSelectedSale] = useState(null);
+  const [selectedPayment, setSelectedPayment] = useState("cash");
+  const [showMpesaForm, setShowMpesaForm] = useState(false);
+  const [customerPhone, setCustomerPhone] = useState("254");
   const storedUser = sessionStorage.getItem("user");
   const storeId = storedUser ? JSON.parse(storedUser).storeid : null;
   const username = user?.name;
@@ -65,7 +70,6 @@ const Dashboard = () => {
     const fetchCategories = async () => {
       try {
         const res = await axios.get(`${BaseUrl}/categories?storeid=${storeId}`);
-        // console.log("Categories fetched:", res.data);
         setCategories(res.data);
         if (res.data.length > 0) {
           setSelectedCategory(res.data[0].category);
@@ -169,7 +173,7 @@ const Dashboard = () => {
     setCart([]);
     toast.info("Cart cleared", {
       position: "top-right",
-      autoClose: 2000,
+      autoClose: 1000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -310,21 +314,22 @@ const Dashboard = () => {
   // Pending Bills Checkout
   // Pending Bills Checkout
   // Pending Bills Checkout
-  const handleCheckout = async (sale) => {
+  const handleCheckout = async (sale, method = "default") => {
     try {
       setLoadingCheckoutId(sale.id);
+      setShowPaymentModal(false);
       // Update payment status to "paid"
       await axios.put(`${BaseUrl}/sales/${sale.id}`, {
         billno: sale.billno,
         servedby: sale.servedby,
         paymentstatus: "paid", // mark as paid
         total: sale.total,
-        paymentmethod: sale.paymentmethod || "Cash",
+        paymentmethod: method,
         storeid: sale.storeid,
         vat: sale.vat || 0,
       });
 
-      // ✅ 2️⃣ Fetch store details
+      // Fetch store details
       const res = await axios.get(`${BaseUrl}/stores`, {
         params: { storeId },
       });
@@ -371,7 +376,7 @@ const Dashboard = () => {
           <div><b>Bill No:</b> ${sale.billno}</div>
           <div><b>Served By:</b> ${sale.servedby}</div>
           <div><b>Date:</b> ${now.toLocaleString()}</div>
-          <div><b>Payment:</b> ${sale.paymentmethod || "Cash"}</div>
+          <div><b>Payment:</b> ${method || "Cash"}</div>
           <div class="line"></div>
 
           ${sale.sale_item
@@ -414,6 +419,11 @@ const Dashboard = () => {
     }
   };
 
+  const initiateCheckout = (sale) => {
+    setSelectedSale(sale);
+    setShowPaymentModal(true);
+  };
+
   // Dashboard Checkout
   // Dashboard Checkout
   // Dashboard Checkout
@@ -426,7 +436,7 @@ const Dashboard = () => {
     }
 
     try {
-      // 1️⃣ Fetch store details
+      // Fetch store details
       const res = await axios.get(`${BaseUrl}/stores`, {
         params: { storeId },
       });
@@ -439,7 +449,7 @@ const Dashboard = () => {
       const store = res.data[0];
       const now = new Date();
 
-      // 2️⃣ Build receipt HTML
+      // Build receipt HTML
       const receiptWindow = window.open("", "PRINT", "height=600,width=400");
 
       const receiptHtml = `
@@ -546,10 +556,15 @@ const Dashboard = () => {
         params: { storeid: storeId },
       });
 
+      const today = new Date();
+      const todayStr = today.toISOString().split("T")[0];
+
       // filter by servedby === username
       const filtered = res.data.filter(
         (receipt) =>
-          receipt.servedby === username && receipt.paymentstatus === "paid"
+          receipt.servedby === username &&
+          receipt.paymentstatus === "paid" &&
+          receipt.created_at?.startsWith(todayStr)
       );
       setReprint(filtered);
     } catch (err) {
@@ -867,7 +882,7 @@ const Dashboard = () => {
                           </ul>
                           <button
                             className="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2 fw-bold"
-                            onClick={() => handleCheckout(sale)}
+                            onClick={() => initiateCheckout(sale)}
                             disabled={loadingCheckoutId === sale.id}
                           >
                             {loadingCheckoutId === sale.id ? (
@@ -1023,45 +1038,212 @@ const Dashboard = () => {
         show={showRecallModal}
         onHide={() => setShowRecallModal(false)}
         centered
+        size="md"
       >
         <Modal.Header
           closeButton
           style={{ background: "#3c51a1", color: "white" }}
         >
-          <Modal.Title>Recall Held Bill</Modal.Title>
+          <Modal.Title style={{ fontSize: "1rem" }}>
+            Recall Held Bill
+          </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+
+        <Modal.Body
+          style={{
+            maxHeight: "70vh", // keeps modal within viewport
+            overflowY: "auto", // scrolls only content
+            padding: "10px 15px",
+          }}
+        >
           {heldBills.length === 0 ? (
-            <p className="text-muted text-center">No held bills available.</p>
+            <p className="text-muted text-center m-0">
+              No held bills available.
+            </p>
           ) : (
             heldBills.map((bill) => (
               <Card
                 key={bill.billno}
-                className="mb-3 shadow-sm"
-                style={{ cursor: "pointer", borderLeft: "5px solid #88c244" }}
+                className="mb-2 shadow-sm"
+                style={{
+                  cursor: "pointer",
+                  borderLeft: "4px solid #88c244",
+                  fontSize: "0.85rem",
+                }}
                 onClick={() => handleSelectHeldBill(bill)}
               >
-                <Card.Body>
-                  <Card.Title>{bill.billno}</Card.Title>
-                  <Card.Text>
-                    <strong>Total:</strong> KES {bill.total.toLocaleString()}{" "}
-                    <br />
-                    <strong>Served By:</strong> {bill.servedby} <br />
-                    <strong>Date:</strong>{" "}
-                    {new Date(bill.date).toLocaleString()}
-                  </Card.Text>
+                <Card.Body style={{ padding: "8px 12px" }}>
+                  <div className="d-flex justify-content-between align-items-center mb-1">
+                    <span
+                      className="text-muted"
+                      style={{ fontSize: "0.75rem" }}
+                    >
+                      {bill.billno}
+                    </span>
+                    <span
+                      className="text-muted"
+                      style={{ fontSize: "0.75rem", whiteSpace: "nowrap" }}
+                    >
+                      {new Date(bill.date).toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="d-flex justify-content-between align-items-center">
+                    <span>
+                      <strong>Total:</strong> KES {bill.total.toLocaleString()}
+                    </span>
+                    <span>
+                      <strong>Served By:</strong> {bill.servedby}
+                    </span>
+                  </div>
                 </Card.Body>
               </Card>
             ))
           )}
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowRecallModal(false)}>
+
+        <Modal.Footer style={{ padding: "6px 12px" }}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowRecallModal(false)}
+          >
             Close
           </Button>
         </Modal.Footer>
       </Modal>
+
       {/* New Modal end   */}
+
+      {/* Payment method modal  */}
+
+      <Modal
+        show={showPaymentModal}
+        onHide={() => setShowPaymentModal(false)}
+        centered
+        style={{ zIndex: 2000 }}
+      >
+        <Modal.Header
+          closeButton
+          style={{
+            background: "#3c51a1",
+            color: "white",
+            padding: "8px 16px",
+          }}
+        >
+          <Modal.Title style={{ fontSize: "1rem", fontWeight: "600" }}>
+            Select Payment Method
+          </Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <Tabs
+            activeKey={selectedPayment}
+            onSelect={(k) => setSelectedPayment(k)}
+            className="custom-tabs mb-3"
+          >
+            {/*  CASH */}
+            <Tab eventKey="cash" title="Cash">
+              <p>
+                <strong>Total:</strong> KES{" "}
+                {selectedSale?.total?.toLocaleString() || 0}
+              </p>
+              <Button
+                style={{
+                  background: "#4d6ff5ff",
+                  color: "white",
+                  padding: "8px 16px",
+                }}
+                className="w-100"
+                onClick={() => handleCheckout(selectedSale, "cash")}
+              >
+                Confirm Cash Payment
+              </Button>
+            </Tab>
+
+            {/* MPESA */}
+            <Tab eventKey="mpesa" title="M-Pesa">
+              <p>
+                <strong>Total:</strong> KES{" "}
+                {selectedSale?.total?.toLocaleString() || 0}
+              </p>
+
+              {!showMpesaForm && (
+                <>
+                  <Button
+                    variant="primary"
+                    className="w-100 mb-2"
+                    onClick={() => setShowMpesaForm(true)}
+                  >
+                    Initiate STK Push
+                  </Button>
+                  <Button
+                    style={{
+                      background: "#4d6ff5ff",
+                      color: "white",
+                      padding: "8px 16px",
+                    }}
+                    className="w-100"
+                    onClick={() => handleCheckout(selectedSale, "mpesa")}
+                  >
+                    Confirm M-pesa Payment
+                  </Button>
+                </>
+              )}
+
+              {showMpesaForm && (
+                <div className="border rounded p-3 mt-3">
+                  <label className="form-label">Customer Phone</label>
+                  <input
+                    type="text"
+                    className="form-control mb-2"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    placeholder="2547XXXXXXXX"
+                  />
+                  <div className="d-flex justify-content-between">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setShowMpesaForm(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => console.log("Prompt STK Push later")}
+                    >
+                      Prompt STK Push
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </Tab>
+
+            {/* CARD */}
+            <Tab eventKey="card" title="Card">
+              <p>
+                <strong>Total:</strong> KES{" "}
+                {selectedSale?.total?.toLocaleString() || 0}
+              </p>
+              <Button
+                style={{
+                  background: "#4d6ff5ff",
+                  color: "white",
+                  padding: "8px 16px",
+                }}
+                className="w-100"
+                onClick={() => handleCheckout(selectedSale, "card")}
+              >
+                Confirm Card Payment
+              </Button>
+            </Tab>
+          </Tabs>
+        </Modal.Body>
+      </Modal>
+
+      {/* end of payment method modal  */}
     </div>
   );
 };

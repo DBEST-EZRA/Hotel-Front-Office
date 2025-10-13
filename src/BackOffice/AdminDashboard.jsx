@@ -41,6 +41,8 @@ import Categories from "./Categories";
 import Calculator from "./Calculator";
 import Database from "./Database";
 import Restaurant from "./Restaurant";
+import Logs from "./Logs";
+import Recipe from "./Recipe";
 
 const AdminDashboard = () => {
   const [selected, setSelected] = useState("Restaurant Info");
@@ -69,13 +71,13 @@ const AdminDashboard = () => {
     Bank: () => <Compliance />,
     Expenses: () => <Expenses />,
     Voucher: () => <Compliance />,
-    Recipe: () => <Compliance />,
+    Recipe: () => <Recipe />,
     Attendance: () => <Compliance />,
     Payroll: () => <Compliance />,
     "PoS Report": () => <Reports />,
     "Accounting Reports": () => <GeneralReport />,
     Users: () => <Users />,
-    Logs: () => <Compliance />,
+    Logs: () => <Logs />,
     Kitchen: () => <Compliance />,
     Calculator: () => <Calculator />,
     Database: () => <Database />,
